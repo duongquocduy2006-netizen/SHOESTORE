@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết sản phẩm | ShoeStore</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --bg-body: #050505;
+            --card-bg: #121212;
+            --accent-red: #e50914;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, .brand-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        /* --- BREADCRUMB --- */
+        .custom-breadcrumb {
+            background: transparent;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        .breadcrumb-item a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: 0.2s; }
+        .breadcrumb-item a:hover { color: var(--accent-red); }
+        .breadcrumb-item.active { color: #fff; }
+        .breadcrumb-item + .breadcrumb-item::before { color: #555; }
+
+        /* --- PRODUCT GALLERY (LEFT) --- */
+        .product-gallery { position: relative; }
+        
+        .main-img-box {
+            background: #151515;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: zoom-in;
+            border: 1px solid var(--border-glass);
+        }
+
+        .main-img {
+            width: 100%; height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .thumb-grid { display: flex; gap: 15px; }
+        .thumb-item {
+            width: 80px; height: 80px;
+            background: #151515;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            overflow: hidden;
+            transition: 0.2s;
+        }
+        .thumb-item img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: 0.2s; }
+        
+        .thumb-item:hover, .thumb-item.active { border-color: var(--accent-red); }
+        .thumb-item:hover img, .thumb-item.active img { opacity: 1; }
+
+        /* --- PRODUCT INFO (RIGHT) --- */
+        .product-brand { color: var(--text-muted); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+        .product-title { font-size: 40px; font-weight: 700; line-height: 1.2; margin-bottom: 15px; }
+        
+        .product-price-box { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .current-price { font-family: 'Oswald', sans-serif; font-size: 32px; color: var(--accent-red); font-weight: 600; }
+        .old-price { font-size: 18px; color: #666; text-decoration: line-through; }
+        .discount-tag { background: #ffd700; color: #000; font-weight: 700; font-size: 12px; padding: 3px 8px; border-radius: 4px; }
+
+        .product-desc { color: #ccc; font-size: 14px; line-height: 1.6; margin-bottom: 30px; }
+
+        /* Size Selector */
+        .size-label { font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .size-guide-link { color: var(--text-muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+        
+        .size-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+        .size-option {
+            width: 45px; height: 45px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 500;
+            cursor: pointer; transition: 0.2s;
+            border-radius: 8px;
+        }
+        .size-option:hover { border-color: #fff; }
+        .size-option.active { background: #fff; color: #000; border-color: #fff; font-weight: 700; }
+        .size-option.disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
+
+        /* Actions */
+        .action-group { display: flex; gap: 15px; align-items: center; margin-bottom: 30px; }
+        
+        /* Quantity (Reuse) */
+        .qty-wrapper {
+            display: flex; align-items: center; background: #000; border: 1px solid #333; border-radius: 50px; padding: 5px; height: 50px;
+        }
+        .qty-btn { width: 40px; height: 100%; border: none; background: transparent; color: #fff; font-size: 18px; cursor: pointer; }
+        .qty-btn:hover { color: var(--accent-red); }
+        .qty-input { width: 40px; text-align: center; background: transparent; border: none; color: #fff; font-weight: 600; }
+        .qty-input:focus { outline: none; }
+
+        .btn-add-cart {
+            flex: 1;
+            height: 50px;
+            background: transparent; color: #fff;
+            border: 1px solid #fff;
+            font-family: 'Oswald', sans-serif; font-size: 16px; letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .btn-add-cart:hover { background: #fff; color: #000; }
+
+        .btn-buy-now {
+            flex: 1;
+            height: 50px;
+            background: var(--accent-red); color: #fff;
+            border: none;
+            font-family: 'Oswald', sans-serif; font-size: 16px; letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.4);
+            transition: 0.3s;
+        }
+        .btn-buy-now:hover { background: #b20710; transform: translateY(-2px); }
+
+        .wish-btn {
+            width: 50px; height: 50px; border: 1px solid #333; background: #1a1a1a; color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            border-radius: 50%; cursor: pointer; transition: 0.2s;
+        }
+        .wish-btn:hover { border-color: var(--accent-red); color: var(--accent-red); }
+
+        /* --- TABS SECTION --- */
+        .product-tabs { margin-top: 60px; }
+        .nav-tabs { border-bottom: 1px solid #333; }
+        .nav-link {
+            color: #777; background: transparent; border: none; font-family: 'Oswald', sans-serif;
+            font-size: 18px; text-transform: uppercase; letter-spacing: 1px; padding: 15px 30px;
+            position: relative;
+        }
+        .nav-link:hover { color: #fff; }
+        .nav-link.active { color: #fff; background: transparent; }
+        .nav-link.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--accent-red);
+        }
+
+        .tab-content { padding: 40px 0; color: #ccc; font-size: 15px; line-height: 1.7; }
+        
+        /* Specs Table */
+        .specs-table td { padding: 10px 0; border-bottom: 1px solid #222; color: #aaa; }
+        .specs-table td:first-child { width: 150px; font-weight: 600; color: #fff; }
+
+        /* Reviews */
+        .review-item { border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
+        .user-rating { color: #ffd700; font-size: 12px; margin-bottom: 5px; }
+
+        /* --- RELATED PRODUCTS (Reuse Card) --- */
+        .related-title { margin-top: 60px; margin-bottom: 30px; font-size: 28px; border-left: 5px solid var(--accent-red); padding-left: 20px; }
+        
+        /* Copy Card CSS from Shop Page (Simplified) */
+        .product-card { background: #121212; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; overflow: hidden; transition: 0.3s; }
+        .product-card:hover { transform: translateY(-5px); border-color: #444; }
+        .card-img-box { position: relative; padding-top: 100%; background: #1a1a1a; }
+        .card-img-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .card-info { padding: 15px; }
+        .card-name a { color: #fff; text-decoration: none; font-weight: 500; }
+        .card-price { color: var(--accent-red); font-family: 'Oswald', sans-serif; margin-top: 5px; }
+        
+        /* CUSTOM POLICY ICONS COLORS */
+        .policy-text { color: #e0e0e0; font-size: 13px; font-weight: 300; } /* Sáng hơn text-muted */
+
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{client/fragments/header :: header}"></div>
+
+    <div class="container pb-5">
+        
+        <nav aria-label="breadcrumb" class="custom-breadcrumb animate__animated animate__fadeIn">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/shop">Nam</a></li>
+                <li class="breadcrumb-item"><a href="/shop">Nike</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Air Force 1 '07</li>
+            </ol>
+        </nav>
+
+        <div class="row g-5">
+            <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                <div class="product-gallery">
+                    <div class="main-img-box">
+                        <img id="mainImage" src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png" class="main-img">
+                    </div>
+                    <div class="thumb-grid">
+                        <div class="thumb-item active" onclick="changeImage(this, 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png')">
+                            <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png">
+                        </div>
+                        <div class="thumb-item" onclick="changeImage(this, 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/a1df3e00-2479-44d5-9118-2432c6686a34/air-force-1-07-shoes-WrLlWX.png')">
+                            <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/a1df3e00-2479-44d5-9118-2432c6686a34/air-force-1-07-shoes-WrLlWX.png">
+                        </div>
+                        <div class="thumb-item" onclick="changeImage(this, 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/232491a5-e350-482f-a26b-640a3dd954e3/air-force-1-07-shoes-WrLlWX.png')">
+                            <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/232491a5-e350-482f-a26b-640a3dd954e3/air-force-1-07-shoes-WrLlWX.png">
+                        </div>
+                        <div class="thumb-item" onclick="changeImage(this, 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/e83b5443-4a12-4279-9c59-86646879e952/air-force-1-07-shoes-WrLlWX.png')">
+                            <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/e83b5443-4a12-4279-9c59-86646879e952/air-force-1-07-shoes-WrLlWX.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 animate__animated animate__fadeInRight">
+                <div class="product-brand">Nike Originals</div>
+                <h1 class="product-title">NIKE AIR FORCE 1 '07 WHITE</h1>
+                
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="text-warning small"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                    <span class="text-muted small">(128 đánh giá)</span>
+                    <span class="badge bg-success">Còn hàng</span>
+                </div>
+
+                <div class="product-price-box">
+                    <div class="current-price">2.500.000đ</div>
+                    <div class="old-price">3.200.000đ</div>
+                    <div class="discount-tag">-22%</div>
+                </div>
+
+                <p class="product-desc">
+                    Huyền thoại sống mãi. Đôi Air Force 1 '07 giữ nguyên những gì bạn yêu thích nhất: lớp da sắc nét, màu sắc táo bạo và độ êm ái hoàn hảo để bạn tỏa sáng.
+                </p>
+
+                <div class="mb-4">
+                    <div class="size-label">
+                        <span>Chọn Size (EU)</span>
+                        <span class="size-guide-link"><i class="fa fa-ruler-horizontal me-1"></i> Bảng quy đổi</span>
+                    </div>
+                    <div class="size-grid">
+                        <div class="size-option" onclick="selectSize(this)">39</div>
+                        <div class="size-option active" onclick="selectSize(this)">40</div>
+                        <div class="size-option" onclick="selectSize(this)">41</div>
+                        <div class="size-option" onclick="selectSize(this)">42</div>
+                        <div class="size-option disabled">43</div>
+                    </div>
+                </div>
+
+                <div class="action-group">
+                    <div class="qty-wrapper">
+                        <button class="qty-btn" onclick="decrease()">-</button>
+                        <input type="text" class="qty-input" value="1" id="qtyInput" readonly>
+                        <button class="qty-btn" onclick="increase()">+</button>
+                    </div>
+                    <button class="wish-btn"><i class="fa-regular fa-heart"></i></button>
+                </div>
+                
+                <div class="d-flex gap-3 mb-4">
+                    <button class="btn btn-add-cart">Thêm vào giỏ</button>
+                    <button class="btn btn-buy-now">Mua ngay</button>
+                </div>
+
+                <div class="border-top border-secondary pt-3 mt-4">
+                    <div class="d-flex align-items-center gap-3 text-light small mb-2 policy-text">
+                        <i class="fa fa-check-circle text-success fs-5"></i> <span>Hàng chính hãng 100%</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 text-light small mb-2 policy-text">
+                        <i class="fa fa-truck-fast text-danger fs-5"></i> <span>Miễn phí vận chuyển đơn > 500k</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 text-light small policy-text">
+                        <i class="fa fa-rotate text-primary fs-5"></i> <span>Đổi trả trong 7 ngày</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="product-tabs animate__animated animate__fadeInUp animate__delay-1s">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc">Mô tả</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#specs">Thông số</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#review">Đánh giá (128)</button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="desc">
+                    <p>Huyền thoại sống mãi với Nike Air Force 1 '07. Kết hợp giữa sự thoải mái của sân đấu và phong cách đường phố, đôi giày này mang lại vẻ ngoài tươi mới với những chi tiết quen thuộc: lớp phủ da khâu bền bỉ, lớp hoàn thiện sạch sẽ và đủ độ nổi bật để bạn tỏa sáng.</p>
+                    <p>Đệm Nike Air: Ban đầu được thiết kế cho bóng rổ, đệm Nike Air mang lại sự thoải mái nhẹ nhàng cả ngày.</p>
+                </div>
+                
+                <div class="tab-pane fade" id="specs">
+                    <table class="specs-table w-100">
+                        <tr><td>Thương hiệu</td><td>Nike</td></tr>
+                        <tr><td>Mã sản phẩm</td><td>CW2288-111</td></tr>
+                        <tr><td>Chất liệu</td><td>Da cao cấp</td></tr>
+                        <tr><td>Đế giày</td><td>Cao su</td></tr>
+                        <tr><td>Xuất xứ</td><td>Việt Nam</td></tr>
+                    </table>
+                </div>
+
+                <div class="tab-pane fade" id="review">
+                    <div class="review-item">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="text-white mb-0">Nguyễn Văn A</h6>
+                            <small class="text-muted">20/01/2026</small>
+                        </div>
+                        <div class="user-rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></div>
+                        <p class="mb-0">Giày đẹp, đi êm, đúng size. Giao hàng nhanh!</p>
+                    </div>
+                    <div class="review-item">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="text-white mb-0">Trần Thị B</h6>
+                            <small class="text-muted">18/01/2026</small>
+                        </div>
+                        <div class="user-rating"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        <p class="mb-0">Đóng gói cẩn thận, nhưng hộp hơi móp xíu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="related-title">CÓ THỂ BẠN THÍCH</h3>
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="product-card">
+                    <div class="card-img-box"><img src="https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/57c1e5b1-2742-4f05-862d-20949d06b025/air-jordan-1-low-se-shoes-H7DD5v.png"></div>
+                    <div class="card-info">
+                        <div class="card-name"><a href="#">Air Jordan 1 Low</a></div>
+                        <div class="card-price">3.200.000đ</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="product-card">
+                    <div class="card-img-box"><img src="https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/e6da41fa-1be4-4ce5-b89c-22be4f1f02d4/air-force-1-07-shoes-GjXQkX.png"></div>
+                    <div class="card-info">
+                        <div class="card-name"><a href="#">Air Force 1 Panda</a></div>
+                        <div class="card-price">2.900.000đ</div>
+                    </div>
+                </div>
+            </div>
+             <div class="col-md-3 col-6">
+                <div class="product-card">
+                    <div class="card-img-box"><img src="https://assets.adidas.com/images/w_600,f_auto,q_auto/4e894c2b76dd4c8e9013aafc016047af_9366/Superstar_Shoes_White_FV3284_01_standard.jpg"></div>
+                    <div class="card-info">
+                        <div class="card-name"><a href="#">Adidas Superstar</a></div>
+                        <div class="card-price">2.000.000đ</div>
+                    </div>
+                </div>
+            </div>
+             <div class="col-md-3 col-6">
+                <div class="product-card">
+                    <div class="card-img-box"><img src="https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374915/01/sv01/fnd/IND/fmt/png/Suede-Classic-XXI-Sneakers"></div>
+                    <div class="card-info">
+                        <div class="card-name"><a href="#">Puma Suede</a></div>
+                        <div class="card-price">1.850.000đ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // JS: Change Main Image
+        function changeImage(thumb, src) {
+            document.getElementById('mainImage').src = src;
+            document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+
+        // JS: Select Size
+        function selectSize(el) {
+            if (el.classList.contains('disabled')) return;
+            document.querySelectorAll('.size-option').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // JS: Quantity
+        const qtyInput = document.getElementById('qtyInput');
+        function increase() {
+            qtyInput.value = parseInt(qtyInput.value) + 1;
+        }
+        function decrease() {
+            if (parseInt(qtyInput.value) > 1) {
+                qtyInput.value = parseInt(qtyInput.value) - 1;
+            }
+        }
+    </script>
+</body>
+</html>

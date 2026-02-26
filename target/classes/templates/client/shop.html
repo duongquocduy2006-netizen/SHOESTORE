@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cửa hàng | ShoeStore</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --bg-body: #050505;
+            --card-bg: #121212;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --accent-red: #e50914;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- BANNER --- */
+        .shop-banner {
+            height: 200px;
+            background: linear-gradient(to right, #000000, #1a1a1a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-glass);
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .shop-banner::after {
+            content: 'COLLECTION 2026';
+            position: absolute;
+            font-size: 100px;
+            font-weight: 800;
+            color: rgba(255,255,255,0.03);
+            white-space: nowrap;
+            font-family: 'Oswald', sans-serif;
+        }
+        .shop-title {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
+        }
+
+        /* --- SIDEBAR FILTER --- */
+        .filter-sidebar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 25px;
+            position: sticky;
+            top: 100px;
+        }
+        .filter-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-group { margin-bottom: 25px; }
+        .filter-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+        .custom-checkbox:hover { color: #fff; }
+        .custom-checkbox input { display: none; }
+        .checkmark {
+            height: 16px;
+            width: 16px;
+            background-color: #222;
+            border: 1px solid #444;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+            border-radius: 3px;
+            position: relative;
+        }
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+        .custom-checkbox input:checked ~ .checkmark::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1px;
+            width: 4px;
+            height: 9px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .custom-checkbox input:checked ~ span { color: #fff; font-weight: 500; }
+
+        /* --- RANGE SLIDER CSS (NEW) --- */
+        .price-slider-wrapper {
+            position: relative;
+            height: 5px;
+            margin: 10px 0 20px 0;
+        }
+        .slider-track {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            border-radius: 5px;
+            top: 0; left: 0;
+        }
+        .slider-progress {
+            position: absolute;
+            height: 100%;
+            background-color: var(--accent-red);
+            border-radius: 5px;
+            top: 0;
+            /* JS sẽ điều khiển left và right */
+            left: 10%; 
+            right: 30%;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.5);
+        }
+        .range-input {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            top: 0; left: 0;
+            background: none;
+            pointer-events: none; /* Cho phép click xuyên qua */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        /* Chrome/Safari/Edge Thumb */
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid var(--accent-red);
+            cursor: pointer;
+            pointer-events: auto; /* Bật lại click cho nút kéo */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+        .range-input::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        /* Firefox Thumb */
+        .range-input::-moz-range-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid var(--accent-red);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .filter-btn {
+            width: 100%;
+            background: #fff;
+            color: #000;
+            font-family: 'Oswald', sans-serif;
+            border: none;
+            padding: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .filter-btn:hover { background: var(--accent-red); color: #fff; }
+
+        /* --- PRODUCT CARD --- */
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            transition: var(--transition);
+            height: 100%;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: #444;
+        }
+        .card-img-wrapper {
+            position: relative;
+            padding-top: 100%;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+        .card-img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .product-card:hover .card-img { transform: scale(1.1); }
+        .card-badge {
+            position: absolute;
+            top: 10px; left: 10px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 2px;
+            z-index: 2;
+        }
+        .badge-new { background: #ffd700; color: #000; }
+        .badge-sale { background: var(--accent-red); color: #fff; }
+        
+        .card-actions {
+            position: absolute;
+            bottom: -50px; left: 0; width: 100%;
+            display: flex; justify-content: center; gap: 10px;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            transition: 0.3s ease;
+            opacity: 0;
+        }
+        .product-card:hover .card-actions { bottom: 0; opacity: 1; }
+        
+        .action-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: #fff; color: #000;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; font-size: 16px;
+            transition: 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .action-btn:hover { background: var(--accent-red); color: #fff; transform: scale(1.1); }
+        
+        .card-body { padding: 15px; }
+        .product-brand { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .product-title { font-size: 15px; font-weight: 600; margin: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-title a { color: #fff; text-decoration: none; transition: 0.2s; }
+        .product-title a:hover { color: var(--accent-red); }
+        
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .price { font-family: 'Oswald', sans-serif; font-size: 18px; color: #fff; font-weight: 500; }
+        .price-old { font-size: 13px; color: #666; text-decoration: line-through; margin-right: 5px; }
+        .rating { font-size: 12px; color: #ffd700; }
+
+        /* Toolbar & Pagination */
+        .shop-toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; padding: 15px;
+            background: var(--card-bg);
+            border-radius: 8px; border: 1px solid var(--border-glass);
+        }
+        .form-select-dark {
+            background-color: #000; color: #fff;
+            border: 1px solid #333; font-size: 14px;
+            padding: 8px 30px 8px 10px;
+        }
+        .pagination-dark .page-link {
+            background: #121212; border-color: #333; color: #fff;
+            margin: 0 3px; border-radius: 4px;
+        }
+        .pagination-dark .page-link:hover, .pagination-dark .page-item.active .page-link {
+            background: var(--accent-red); border-color: var(--accent-red); color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{client/fragments/header :: header}"></div>
+
+    <div class="shop-banner animate__animated animate__fadeIn">
+        <h1 class="shop-title">CỬA HÀNG</h1>
+    </div>
+
+    <div class="container pb-5">
+        <div class="row">
+            
+            <div class="col-lg-3 mb-4 d-none d-lg-block animate__animated animate__fadeInLeft">
+                <div class="filter-sidebar">
+                    <div class="filter-header">
+                        <span>BỘ LỌC</span>
+                        <i class="fa fa-sliders text-muted"></i>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-title">Thương hiệu</div>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" checked>
+                            <span class="checkmark"></span>
+                            <span>Nike</span> <span class="float-end text-muted small">(12)</span>
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox">
+                            <span class="checkmark"></span>
+                            <span>Adidas</span> <span class="float-end text-muted small">(8)</span>
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox">
+                            <span class="checkmark"></span>
+                            <span>Puma</span> <span class="float-end text-muted small">(5)</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-title">Khoảng giá</div>
+                        
+                        <div class="d-flex justify-content-between mb-2" style="font-family: 'Oswald', sans-serif; font-size: 14px; color: #fff;">
+                            <span id="price-min-display">1.000.000đ</span>
+                            <span id="price-max-display">7.000.000đ</span>
+                        </div>
+                    
+                        <div class="price-slider-wrapper">
+                            <div class="slider-track"></div>
+                            <div class="slider-progress"></div>
+                            <input type="range" class="range-input min-range" min="0" max="10000000" value="1000000" step="100000">
+                            <input type="range" class="range-input max-range" min="0" max="10000000" value="7000000" step="100000">
+                        </div>
+                    
+                        <button class="filter-btn mt-3">Áp dụng</button>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="filter-title">Size</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-sm btn-outline-secondary" style="width: 40px;">39</button>
+                            <button class="btn btn-sm btn-outline-secondary active bg-light text-dark" style="width: 40px;">40</button>
+                            <button class="btn btn-sm btn-outline-secondary" style="width: 40px;">41</button>
+                            <button class="btn btn-sm btn-outline-secondary" style="width: 40px;">42</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-9 animate__animated animate__fadeInUp">
+                
+                <div class="shop-toolbar">
+                    <div class="text-muted small">Hiển thị <b>4</b> / 50 sản phẩm</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="small text-muted text-nowrap">Sắp xếp:</span>
+                        <select class="form-select form-select-sm form-select-dark">
+                            <option>Mới nhất</option>
+                            <option>Giá: Thấp đến Cao</option>
+                            <option>Giá: Cao đến Thấp</option>
+                            <option>Bán chạy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    
+                    <div class="col-md-4 col-6">
+                        <div class="product-card">
+                            <div class="card-img-wrapper">
+                                <span class="card-badge badge-new">New</span>
+                                <a th:href="@{/details}">
+                                    <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png" class="card-img">
+                                </a>
+                                <div class="card-actions">
+                                    <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
+                                    <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
+                                    <a href="#" class="action-btn"><i class="fa fa-heart"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="product-brand">Nike</div>
+                                <div class="product-title"><a th:href="@{/details}">Air Force 1 '07 White</a></div>
+                                <div class="price-row">
+                                    <div class="price">2.500.000đ</div>
+                                    <div class="rating"><i class="fa fa-star"></i> 5.0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-6">
+                        <div class="product-card">
+                            <div class="card-img-wrapper">
+                                <span class="card-badge badge-sale">-20%</span>
+                                <a th:href="@{/details}">
+                                    <img src="https://assets.adidas.com/images/w_600,f_auto,q_auto/4e894c2b76dd4c8e9013aafc016047af_9366/Superstar_Shoes_White_FV3284_01_standard.jpg" class="card-img">
+                                </a>
+                                <div class="card-actions">
+                                    <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
+                                    <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
+                                    <a href="#" class="action-btn"><i class="fa fa-heart"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="product-brand">Adidas</div>
+                                <div class="product-title"><a th:href="@{/details}">Superstar Original</a></div>
+                                <div class="price-row">
+                                    <div>
+                                        <span class="price-old">2.000.000đ</span>
+                                        <span class="price text-danger">1.600.000đ</span>
+                                    </div>
+                                    <div class="rating"><i class="fa fa-star"></i> 4.8</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-6">
+                        <div class="product-card">
+                            <div class="card-img-wrapper">
+                                <a th:href="@{/details}">
+                                    <img src="https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374915/01/sv01/fnd/IND/fmt/png/Suede-Classic-XXI-Sneakers" class="card-img">
+                                </a>
+                                <div class="card-actions">
+                                    <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
+                                    <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
+                                    <a href="#" class="action-btn"><i class="fa fa-heart"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="product-brand">Puma</div>
+                                <div class="product-title"><a th:href="@{/details}">Suede Classic XXI</a></div>
+                                <div class="price-row">
+                                    <div class="price">1.850.000đ</div>
+                                    <div class="rating"><i class="fa fa-star"></i> 4.5</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 col-6">
+                        <div class="product-card">
+                            <div class="card-img-wrapper">
+                                <a th:href="@{/details}">
+                                    <img src="https://secure-images.nike.com/is/image/DotCom/CT8012_116_A_PREM?$SNKRS_COVER_WD$&align=0,1" class="card-img">
+                                </a>
+                                <div class="card-actions">
+                                    <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
+                                    <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
+                                    <a href="#" class="action-btn"><i class="fa fa-heart"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="product-brand">Jordan</div>
+                                <div class="product-title"><a th:href="@{/details}">Air Jordan 11 Cherry</a></div>
+                                <div class="price-row">
+                                    <div class="price">5.200.000đ</div>
+                                    <div class="rating"><i class="fa fa-star"></i> 5.0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="mt-5 d-flex justify-content-center">
+                    <ul class="pagination pagination-dark">
+                        <li class="page-item disabled"><a class="page-link" href="#"><i class="fa fa-angle-left"></i></a></li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#"><i class="fa fa-angle-right"></i></a></li>
+                    </ul>
+                </nav>
+
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="~{client/fragments/footer :: footer}"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const rangeInput = document.querySelectorAll(".range-input");
+        const progress = document.querySelector(".slider-progress");
+        const minDisplay = document.getElementById("price-min-display");
+        const maxDisplay = document.getElementById("price-max-display");
+
+        let priceGap = 500000; // Khoảng cách tối thiểu giữa Min và Max (500k)
+
+        // Hàm format tiền tệ VNĐ
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        // Cập nhật giao diện UI lần đầu khi load trang
+        function updateSliderUI(minVal, maxVal) {
+             const maxSliderValue = parseInt(rangeInput[0].max);
+             progress.style.left = (minVal / maxSliderValue) * 100 + "%";
+             progress.style.right = 100 - (maxVal / maxSliderValue) * 100 + "%";
+             minDisplay.innerText = formatCurrency(minVal);
+             maxDisplay.innerText = formatCurrency(maxVal);
+        }
+
+        // Khởi chạy lần đầu
+        updateSliderUI(parseInt(rangeInput[0].value), parseInt(rangeInput[1].value));
+
+        // Lắng nghe sự kiện kéo
+        rangeInput.forEach(input => {
+            input.addEventListener("input", e => {
+                let minVal = parseInt(rangeInput[0].value);
+                let maxVal = parseInt(rangeInput[1].value);
+
+                if ((maxVal - minVal) < priceGap) {
+                    if (e.target.className.includes("min-range")) {
+                        rangeInput[0].value = maxVal - priceGap;
+                    } else {
+                        rangeInput[1].value = minVal + priceGap;
+                    }
+                } else {
+                    updateSliderUI(minVal, maxVal);
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>

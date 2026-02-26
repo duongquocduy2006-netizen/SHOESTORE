@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Hàng Mới Về | ShoeStore</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        /* (Giữ nguyên toàn bộ CSS cũ) */
+        :root { --bg-body: #050505; --card-bg: #121212; --accent-red: #e50914; --accent-cyan: #00f2ff; --text-main: #ffffff; --border-glass: rgba(255, 255, 255, 0.1); --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); }
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+        .marquee-container { background: var(--accent-red); color: #fff; padding: 10px 0; overflow: hidden; white-space: nowrap; position: relative; z-index: 2; }
+        .marquee-content { display: inline-block; font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 2px; animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        
+        /* Banner spotlight */
+        .hero-spotlight { min-height: 80vh; display: flex; align-items: center; position: relative; border-bottom: 1px solid var(--border-glass); overflow: hidden; }
+        .hero-bg { position: absolute; top: 0; right: 0; width: 60%; height: 100%; background: url('https://static.nike.com/a/images/f_auto/dpr_1.3,cs_srgb/w_1423,c_limit/6f8e7960-466d-4952-a39c-482087596d66/jordan-1-lost-and-found-chicago-release-date.jpg') no-repeat center center/cover; mask-image: linear-gradient(to right, transparent, black 20%); -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30%); z-index: 0; opacity: 0.6; transition: transform 10s ease; }
+        .hero-spotlight:hover .hero-bg { transform: scale(1.05); }
+        .hero-text { position: relative; z-index: 2; padding-left: 5%; width: 50%; }
+        .hero-badge { background: transparent; border: 1px solid var(--accent-cyan); color: var(--accent-cyan); padding: 5px 15px; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; display: inline-block; }
+        .hero-title { font-family: 'Oswald', sans-serif; font-size: 80px; font-weight: 700; line-height: 0.9; text-transform: uppercase; margin-bottom: 20px; text-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .hero-desc { font-size: 16px; color: #ccc; max-width: 400px; margin-bottom: 30px; line-height: 1.6; }
+        
+        /* Button Link */
+        .btn-explore { background: #fff; color: #000; padding: 15px 40px; font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: none; transition: var(--transition); text-decoration: none; display: inline-block;}
+        .btn-explore:hover { background: var(--accent-red); color: #fff; box-shadow: 0 0 20px rgba(229, 9, 20, 0.5); }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: end; margin: 60px 0 40px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .section-title { font-family: 'Oswald', sans-serif; font-size: 32px; margin: 0; }
+        .view-all { color: #888; text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .view-all:hover { color: #fff; letter-spacing: 1px; }
+        
+        /* Card */
+        .new-card { background: transparent; position: relative; cursor: pointer; }
+        .new-img-box { position: relative; overflow: hidden; border-radius: 4px; background: #151515; padding-top: 120%; }
+        .new-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1); opacity: 0.9; }
+        .new-card:hover .new-img { transform: scale(1.08); opacity: 1; }
+        .new-badge { position: absolute; top: 15px; left: 15px; background: #000; color: #fff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 5px 10px; z-index: 2; }
+        .overlay-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); transform: translateY(20px); opacity: 0; transition: var(--transition); }
+        .new-card:hover .overlay-info { transform: translateY(0); opacity: 1; }
+        .new-info { padding-top: 15px; }
+        .new-brand { font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+        .new-name { font-family: 'Oswald', sans-serif; font-size: 18px; margin: 5px 0; text-transform: uppercase; }
+        .new-price { color: var(--text-main); font-weight: 600; }
+        
+        .gallery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        @media (max-width: 992px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } .hero-title { font-size: 50px; } }
+        @media (max-width: 576px) { .gallery-grid { grid-template-columns: 1fr; } .hero-spotlight { flex-direction: column; justify-content: center; } .hero-bg { width: 100%; height: 50%; top: auto; bottom: 0; mask-image: linear-gradient(to top, transparent, black 20%); -webkit-mask-image: linear-gradient(to top, transparent 0%, black 50%); } .hero-text { width: 100%; padding: 20px; margin-top: 50px; } }
+        
+        .img-link { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        .new-name a { color: inherit; text-decoration: none; transition: 0.2s; }
+        .new-name a:hover { color: var(--accent-red); }
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{client/fragments/header :: header}"></div>
+
+    <div class="marquee-container">
+        <div class="marquee-content">
+            &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp; FREE SHIPPING WORLDWIDE &nbsp; • &nbsp; JUST LANDED &nbsp; • &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp;
+             NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp; FREE SHIPPING WORLDWIDE &nbsp; • &nbsp; JUST LANDED &nbsp; • &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp;
+        </div>
+    </div>
+
+    <div class="hero-spotlight animate__animated animate__fadeIn">
+        <div class="hero-bg"></div>
+        <div class="hero-text animate__animated animate__fadeInLeft animate__delay-1s">
+            <span class="hero-badge">Spotlight</span>
+            <h1 class="hero-title">JORDAN 1 <br> LOST & FOUND</h1>
+            <p class="hero-desc">
+                Sự trở lại của huyền thoại. Thiết kế cổ điển với phối màu Chicago mang tính biểu tượng, tái hiện lại vẻ đẹp vượt thời gian của năm 1985.
+            </p>
+            <a th:href="@{/details}" class="btn-explore">KHÁM PHÁ NGAY</a>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        
+        <div class="section-header">
+            <h2 class="section-title">VỪA RA MẮT</h2>
+            <a href="#" class="view-all">Xem tất cả <i class="fa fa-arrow-right"></i></a>
+        </div>
+
+        <div class="gallery-grid">
+            
+            <div class="new-card animate__animated animate__fadeInUp">
+                <div class="new-img-box">
+                    <span class="new-badge">New In</span>
+                    <img src="https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/57c1e5b1-2742-4f05-862d-20949d06b025/air-jordan-1-low-se-shoes-H7DD5v.png" class="new-img">
+                    <a th:href="@{/details}" class="img-link"></a>
+                    <div class="overlay-info" style="z-index: 2; position: absolute;">
+                        <a th:href="@{/details}" class="btn btn-light w-100 fw-bold text-uppercase rounded-0 text-decoration-none">Xem chi tiết</a>
+                    </div>
+                </div>
+                <div class="new-info">
+                    <div class="new-brand">Jordan</div>
+                    <div class="new-name"><a th:href="@{/details}">Air Jordan 1 Low SE</a></div>
+                    <div class="new-price">3.200.000đ</div>
+                </div>
+            </div>
+
+            <div class="new-card animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="new-img-box">
+                    <span class="new-badge">Trending</span>
+                    <img src="https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/c20917232ac644d69299af6300d8f0f0_9366/Giay_Ultrabounce_DJen_HP5797_01_standard.jpg" class="new-img">
+                    <a th:href="@{/details}" class="img-link"></a>
+                    <div class="overlay-info" style="z-index: 2; position: absolute;">
+                        <a th:href="@{/details}" class="btn btn-light w-100 fw-bold text-uppercase rounded-0 text-decoration-none">Xem chi tiết</a>
+                    </div>
+                </div>
+                <div class="new-info">
+                    <div class="new-brand">Adidas</div>
+                    <div class="new-name"><a th:href="@{/details}">Ultrabounce Core Black</a></div>
+                    <div class="new-price">2.100.000đ</div>
+                </div>
+            </div>
+
+            <div class="new-card animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="new-img-box">
+                    <span class="new-badge">Exclusive</span>
+                    <img src="https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/383462/01/sv01/fnd/IND/fmt/png/RS-Z-College-Unisex-Sneakers" class="new-img">
+                    <a th:href="@{/details}" class="img-link"></a>
+                    <div class="overlay-info" style="z-index: 2; position: absolute;">
+                        <a th:href="@{/details}" class="btn btn-light w-100 fw-bold text-uppercase rounded-0 text-decoration-none">Xem chi tiết</a>
+                    </div>
+                </div>
+                <div class="new-info">
+                    <div class="new-brand">Puma</div>
+                    <div class="new-name"><a th:href="@{/details}">RS-Z College</a></div>
+                    <div class="new-price">2.600.000đ</div>
+                </div>
+            </div>
+
+            <div class="new-card animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="new-img-box">
+                    <span class="new-badge">New In</span>
+                    <img src="https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/e6da41fa-1be4-4ce5-b89c-22be4f1f02d4/air-force-1-07-shoes-GjXQkX.png" class="new-img">
+                    <a th:href="@{/details}" class="img-link"></a>
+                    <div class="overlay-info" style="z-index: 2; position: absolute;">
+                        <a th:href="@{/details}" class="btn btn-light w-100 fw-bold text-uppercase rounded-0 text-decoration-none">Xem chi tiết</a>
+                    </div>
+                </div>
+                <div class="new-info">
+                    <div class="new-brand">Nike</div>
+                    <div class="new-name"><a th:href="@{/details}">Air Force 1 '07 Panda</a></div>
+                    <div class="new-price">2.900.000đ</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="section-header mt-5">
+            <h2 class="section-title">SẮP RA MẮT</h2>
+        </div>
+        
+        <div class="row g-4">
+             <div class="col-md-6 animate__animated animate__fadeInUp">
+                <div class="position-relative overflow-hidden rounded-3" style="height: 300px;">
+                    <img src="https://brand.assets.adidas.com/image/upload/f_auto,q_auto,fl_lossy/if_w_gt_1920,w_1920/running_fw23_supernova_rise_global_educate_hp_banner_interactive_d_72404e330a.jpg" 
+                         style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                        <h3 class="text-white brand-font" style="font-size: 30px;">ADIDAS SUPERNOVA</h3>
+                        <p class="text-white-50">Ngày ra mắt: 01/02/2026</p>
+                        <button class="btn btn-outline-light rounded-0 px-4">ĐĂNG KÝ NHẬN TIN</button>
+                    </div>
+                </div>
+             </div>
+             
+             <div class="col-md-6 animate__animated animate__fadeInUp">
+                <div class="position-relative overflow-hidden rounded-3" style="height: 300px;">
+                    <img src="https://static.nike.com/a/images/f_auto/dpr_1.3,cs_srgb/w_1423,c_limit/c990529d-5221-4f16-92c9-631627054238/nike-just-do-it.jpg" 
+                         style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                        <h3 class="text-white brand-font" style="font-size: 30px;">NIKE TRAVIS SCOTT</h3>
+                        <p class="text-white-50">Sắp công bố</p>
+                        <button class="btn btn-outline-light rounded-0 px-4">ĐĂNG KÝ NHẬN TIN</button>
+                    </div>
+                </div>
+             </div>
+        </div>
+
+    </div>
+        <div th:replace="~{client/fragments/footer :: footer}"></div>
+    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    </body>
+</html>

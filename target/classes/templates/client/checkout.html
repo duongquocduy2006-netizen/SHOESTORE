@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thanh Toán | ShoeStore</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        /* --- COPY TỪ TRANG GIỎ HÀNG (GIỮ NGUYÊN) --- */
+        :root {
+            --bg-body: #050505;
+            --card-bg: #121212;
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-red: #e50914;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --input-bg: #000000;
+            --input-border: #333;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        h1, h2, h3, h4, h5 { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        /* --- CHECKOUT SPECIFIC STYLES --- */
+        
+        /* Steps Indicator */
+        .checkout-steps {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 1px;
+        }
+        .step {
+            color: var(--text-muted);
+            position: relative;
+            padding: 0 20px;
+        }
+        .step.active { color: var(--accent-red); font-weight: bold; }
+        .step:not(:last-child)::after {
+            content: '>';
+            position: absolute;
+            right: -5px;
+            color: #333;
+        }
+
+        /* Form Styling */
+        .card-checkout {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-red);
+            padding-left: 15px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-control-dark {
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+        }
+        .form-control-dark:focus {
+            background-color: #111;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 0.25rem rgba(229, 9, 20, 0.25);
+            color: #fff;
+        }
+        
+        /* Payment Options */
+        .payment-option {
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .payment-option:hover { border-color: #666; }
+        
+        .payment-option.selected {
+            border-color: var(--accent-red);
+            background: rgba(229, 9, 20, 0.05);
+        }
+
+        .radio-custom {
+            accent-color: var(--accent-red);
+            width: 18px;
+            height: 18px;
+            margin-right: 15px;
+        }
+
+        .payment-icon { font-size: 24px; margin-right: 15px; width: 30px; text-align: center; }
+
+        /* Summary Sidebar */
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 30px;
+            position: sticky;
+            top: 30px;
+        }
+
+        .mini-product {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+        }
+        .mini-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 15px;
+        }
+        .mini-info h6 { font-size: 14px; margin-bottom: 2px; }
+        .mini-info small { color: var(--text-muted); font-size: 12px; }
+        .mini-price { margin-left: auto; font-size: 14px; font-weight: 600; color: var(--accent-red); }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #ccc;
+            font-size: 14px;
+        }
+        .grand-total {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            border-top: 1px dashed #333;
+            padding-top: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-order {
+            width: 100%;
+            background: var(--accent-red);
+            color: #fff;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 25px;
+            transition: var(--transition);
+        }
+        .btn-order:hover {
+            background: #b20710;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{client/fragments/header :: header}"></div>
+
+    <div class="container py-5">
+        
+        <div class="checkout-steps animate__animated animate__fadeInDown">
+            <div class="step"><a href="/cart" class="text-decoration-none text-muted">GIỎ HÀNG</a></div>
+            <div class="step active">THANH TOÁN</div>
+            <div class="step">HOÀN TẤT</div>
+        </div>
+
+        <form method="post" th:action="@{/checkout/process}"> <div class="row g-4">
+                
+                <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                    
+                    <div class="card-checkout">
+                        <h4 class="section-header">Thông tin giao hàng</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Họ và tên</label>
+                                <input type="text" class="form-control form-control-dark" placeholder="VD: Nguyễn Văn A" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control form-control-dark" placeholder="VD: 0912345678" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Email (Để nhận hóa đơn)</label>
+                                <input type="email" class="form-control form-control-dark" placeholder="email@example.com">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tỉnh / Thành phố</label>
+                                <select class="form-control form-control-dark form-select-dark">
+                                    <option selected>Chọn Tỉnh/TP...</option>
+                                    <option>Hà Nội</option>
+                                    <option>TP. Hồ Chí Minh</option>
+                                    <option>Đà Nẵng</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Quận / Huyện</label>
+                                <select class="form-control form-control-dark">
+                                    <option selected>Chọn Quận/Huyện...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Phường / Xã</label>
+                                <select class="form-control form-control-dark">
+                                    <option selected>Chọn Phường/Xã...</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ cụ thể</label>
+                                <input type="text" class="form-control form-control-dark" placeholder="Số nhà, tên đường..." required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Ghi chú đơn hàng (Tùy chọn)</label>
+                                <textarea class="form-control form-control-dark" rows="2" placeholder="VD: Giao hàng giờ hành chính..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-checkout animate__animated animate__fadeInUp animate__delay-1s">
+                        <h4 class="section-header">Phương thức thanh toán</h4>
+                        
+                        <label class="payment-option selected" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod" value="COD" class="radio-custom" checked>
+                            <div class="payment-icon"><i class="fa-solid fa-money-bill-wave" style="color: #2ecc71;"></i></div>
+                            <div>
+                                <div style="font-weight: 500;">Thanh toán khi nhận hàng (COD)</div>
+                                <div style="font-size: 12px; color: #999;">Thanh toán tiền mặt cho shipper khi nhận hàng</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod" value="BANKING" class="radio-custom">
+                            <div class="payment-icon"><i class="fa-solid fa-qrcode" style="color: #3498db;"></i></div>
+                            <div>
+                                <div style="font-weight: 500;">Chuyển khoản ngân hàng (QR Code)</div>
+                                <div style="font-size: 12px; color: #999;">Quét mã QR qua ứng dụng ngân hàng</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option" onclick="selectPayment(this)">
+                            <input type="radio" name="paymentMethod" value="MOMO" class="radio-custom">
+                            <div class="payment-icon"><i class="fa-solid fa-wallet" style="color: #e91e63;"></i></div>
+                            <div>
+                                <div style="font-weight: 500;">Ví điện tử (Momo/ZaloPay)</div>
+                                <div style="font-size: 12px; color: #999;">Kết nối nhanh chóng, an toàn</div>
+                            </div>
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="col-lg-5 animate__animated animate__fadeInRight">
+                    <div class="summary-card">
+                        <h4 class="mb-4" style="border-bottom: 1px solid #333; padding-bottom: 15px;">Đơn hàng của bạn</h4>
+
+                        <div class="mini-product">
+                            <img src="https://assets.adidas.com/images/w_600,f_auto,q_auto/4e894c2b76dd4c8e9013aafc016047af_9366/Superstar_Shoes_White_FV3284_01_standard.jpg" class="mini-img">
+                            <div class="mini-info">
+                                <h6>Adidas Superstar</h6>
+                                <small>Size: 42 | x1</small>
+                            </div>
+                            <div class="mini-price">2.500.000đ</div>
+                        </div>
+
+                        <div class="mini-product">
+                            <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png" class="mini-img">
+                            <div class="mini-info">
+                                <h6>Nike Air Force 1</h6>
+                                <small>Size: 40 | x2</small>
+                            </div>
+                            <div class="mini-price">6.000.000đ</div>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="total-row">
+                                <span>Tạm tính</span>
+                                <span>8.500.000đ</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Vận chuyển</span>
+                                <span>30.000đ</span>
+                            </div>
+                            <div class="total-row text-success">
+                                <span>Giảm giá (Voucher)</span>
+                                <span>-0đ</span>
+                            </div>
+                            
+                            <div class="grand-total">
+                                <span>TỔNG CỘNG</span>
+                                <span style="color: var(--accent-red);">8.530.000đ</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-order">
+                            ĐẶT HÀNG NGAY
+                        </button>
+                        
+                        <div class="text-center mt-3">
+                            <i class="fa-solid fa-shield-halved text-muted me-2"></i>
+                            <span style="font-size: 12px; color: #777;">Thông tin của bạn được bảo mật tuyệt đối</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Hiệu ứng chọn phương thức thanh toán
+        function selectPayment(element) {
+            // Xóa class selected ở tất cả option
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            // Thêm class selected vào option được click
+            element.classList.add('selected');
+            
+            // Trigger check vào radio button bên trong (nếu click vào div bao ngoài)
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách yêu thích | ShoeStore</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --bg-body: #050505;
+            --card-bg: #121212;
+            --accent-red: #e50914;
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .btn-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        /* --- PAGE HEADER --- */
+        .page-header {
+            padding: 50px 0;
+            border-bottom: 1px solid var(--border-glass);
+            margin-bottom: 40px;
+            background: linear-gradient(to bottom, #0a0a0a, #050505);
+            position: relative;
+        }
+
+        .header-title { font-size: 36px; font-weight: 700; letter-spacing: 2px; margin-bottom: 5px; }
+        .header-desc { color: var(--text-muted); font-size: 14px; letter-spacing: 0.5px; }
+
+        /* --- FAVOURITE CARD --- */
+        .fav-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .fav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: #444;
+        }
+
+        /* Image Area */
+        .fav-img-box {
+            position: relative;
+            padding-top: 100%; /* Tỉ lệ 1:1 */
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .fav-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        .fav-card:hover .fav-img { transform: scale(1.08); }
+
+        /* Remove Button (X) */
+        .btn-remove-fav {
+            position: absolute; top: 10px; right: 10px;
+            width: 32px; height: 32px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .btn-remove-fav:hover { 
+            background: var(--accent-red); 
+            border-color: var(--accent-red); 
+            transform: rotate(90deg); 
+        }
+
+        /* Stock Badge */
+        .stock-badge {
+            position: absolute; top: 10px; left: 10px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            padding: 5px 8px; border-radius: 4px;
+            z-index: 2; letter-spacing: 0.5px;
+        }
+        .in-stock { background: #fff; color: #000; }
+        .out-stock { background: #333; color: #888; border: 1px solid #444; }
+
+        /* Card Body */
+        .fav-body { padding: 20px 15px; text-align: center; }
+        
+        .fav-brand { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        
+        .fav-title { 
+            font-family: 'Oswald', sans-serif; font-size: 16px; margin: 0 0 10px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .fav-title a { color: #fff; text-decoration: none; transition: 0.2s; }
+        .fav-title a:hover { color: var(--accent-red); }
+
+        .fav-price { font-weight: 600; color: #fff; font-size: 15px; margin-bottom: 15px; display: block; }
+        .price-sale { color: var(--accent-red); margin-right: 5px; }
+        .price-del { color: #555; text-decoration: line-through; font-size: 13px; }
+
+        /* Action Button */
+        .btn-move-cart {
+            width: 100%;
+            background: transparent;
+            color: #fff;
+            border: 1px solid var(--border-glass);
+            padding: 10px;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            font-size: 13px; letter-spacing: 1px; font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-move-cart:hover {
+            background: #fff; color: #000; border-color: #fff;
+        }
+        
+        .btn-disabled {
+            opacity: 0.5; cursor: not-allowed; border-color: #333; color: #555;
+        }
+        .btn-disabled:hover { background: transparent; color: #555; border-color: #333; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center; padding: 80px 0;
+            display: none; /* Dùng JS để hiện nếu list rỗng */
+        }
+        .empty-icon { font-size: 50px; color: #333; margin-bottom: 20px; }
+        .btn-back-shop {
+            background: var(--accent-red); color: #fff; border: none;
+            padding: 12px 30px; font-family: 'Oswald', sans-serif; text-transform: uppercase;
+            letter-spacing: 1px; margin-top: 20px; transition: 0.3s;
+        }
+        .btn-back-shop:hover { background: #b20710; transform: translateY(-3px); color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{client/fragments/header :: header}"></div>
+
+    <div class="page-header">
+        <div class="container text-center">
+            <h1 class="header-title animate__animated animate__fadeInDown">YOUR FAVOURITES</h1>
+            <p class="header-desc animate__animated animate__fadeInUp">Bộ sưu tập cá nhân (4 sản phẩm)</p>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        
+        <div class="row g-4" id="favGrid">
+            
+            <div class="col-lg-3 col-md-4 col-6 animate__animated animate__fadeInUp">
+                <div class="fav-card">
+                    <button class="btn-remove-fav" title="Xóa"><i class="fa fa-times"></i></button>
+                    <div class="fav-img-box">
+                        <span class="stock-badge in-stock">Còn hàng</span>
+                        <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png" class="fav-img">
+                    </div>
+                    <div class="fav-body">
+                        <div class="fav-brand">Nike</div>
+                        <h4 class="fav-title"><a href="#">Air Force 1 '07 White</a></h4>
+                        <div class="fav-price">2.500.000đ</div>
+                        <button class="btn-move-cart"><i class="fa fa-cart-plus me-2"></i> Thêm vào giỏ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-4 col-6 animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="fav-card">
+                    <button class="btn-remove-fav" title="Xóa"><i class="fa fa-times"></i></button>
+                    <div class="fav-img-box">
+                        <span class="stock-badge in-stock" style="background: var(--accent-red); color: #fff;">-20%</span>
+                        <img src="https://assets.adidas.com/images/w_600,f_auto,q_auto/4e894c2b76dd4c8e9013aafc016047af_9366/Superstar_Shoes_White_FV3284_01_standard.jpg" class="fav-img">
+                    </div>
+                    <div class="fav-body">
+                        <div class="fav-brand">Adidas</div>
+                        <h4 class="fav-title"><a href="#">Superstar Original</a></h4>
+                        <div class="fav-price">
+                            <span class="price-sale">1.600.000đ</span> <span class="price-del">2.000.000đ</span>
+                        </div>
+                        <button class="btn-move-cart"><i class="fa fa-cart-plus me-2"></i> Thêm vào giỏ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-4 col-6 animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="fav-card" style="opacity: 0.7;">
+                    <button class="btn-remove-fav" title="Xóa"><i class="fa fa-times"></i></button>
+                    <div class="fav-img-box">
+                        <span class="stock-badge out-stock">Hết hàng</span>
+                        <img src="https://secure-images.nike.com/is/image/DotCom/CT8012_116_A_PREM?$SNKRS_COVER_WD$&align=0,1" class="fav-img" style="filter: grayscale(100%);">
+                    </div>
+                    <div class="fav-body">
+                        <div class="fav-brand">Jordan</div>
+                        <h4 class="fav-title"><a href="#">Air Jordan 11 Cherry</a></h4>
+                        <div class="fav-price">5.200.000đ</div>
+                        <button class="btn-move-cart btn-disabled" disabled>Hết hàng</button>
+                    </div>
+                </div>
+            </div>
+
+             <div class="col-lg-3 col-md-4 col-6 animate__animated animate__fadeInUp animate__delay-1s">
+                <div class="fav-card">
+                    <button class="btn-remove-fav" title="Xóa"><i class="fa fa-times"></i></button>
+                    <div class="fav-img-box">
+                        <span class="stock-badge in-stock">Còn hàng</span>
+                        <img src="https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374915/01/sv01/fnd/IND/fmt/png/Suede-Classic-XXI-Sneakers" class="fav-img">
+                    </div>
+                    <div class="fav-body">
+                        <div class="fav-brand">Puma</div>
+                        <h4 class="fav-title"><a href="#">Suede Classic XXI</a></h4>
+                        <div class="fav-price">1.850.000đ</div>
+                        <button class="btn-move-cart"><i class="fa fa-cart-plus me-2"></i> Thêm vào giỏ</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="empty-state" id="emptyState">
+            <i class="fa-regular fa-heart empty-icon"></i>
+            <h3 class="mb-3">DANH SÁCH TRỐNG</h3>
+            <p class="text-muted mb-4">Bạn chưa lưu sản phẩm nào vào danh sách yêu thích.</p>
+            <a href="/shop" class="btn-back-shop">KHÁM PHÁ CỬA HÀNG</a>
+        </div>
+
+    </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Demo JS: Xóa sản phẩm
+        document.querySelectorAll('.btn-remove-fav').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Tìm thẻ cha .col-lg-3 và xóa nó
+                this.closest('.col-lg-3').remove();
+                
+                // Check nếu hết sản phẩm thì hiện Empty State
+                const items = document.querySelectorAll('.fav-card');
+                if(items.length === 0) {
+                    document.getElementById('favGrid').style.display = 'none';
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.querySelector('.header-desc').textContent = 'Bộ sưu tập cá nhân (0 sản phẩm)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
