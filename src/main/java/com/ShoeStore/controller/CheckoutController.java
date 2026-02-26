@@ -18,8 +18,25 @@ public class CheckoutController {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @GetMapping("/checkout/quick")
+    public String quickCheckout(
+            @RequestParam("variantId") Long variantId,
+            @RequestParam("quantity") Integer quantity,
+            HttpSession session) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> account = (Map<String, Object>) session.getAttribute("account");
+        if (account == null)
+            return "redirect:/login";
+
+        // Store quick checkout info in session
+        session.setAttribute("quickCheckout", Map.of("variantId", variantId, "quantity", quantity));
+        return "redirect:/checkout?mode=quick";
+    }
+
     @GetMapping("/checkout")
-    public String checkout(HttpSession session, Model model) {
+    public String checkout(
+            @RequestParam(value = "mode", required = false) String mode,
+            HttpSession session, Model model) {
         @SuppressWarnings("unchecked")
         Map<String, Object> account = (Map<String, Object>) session.getAttribute("account");
         if (account == null) {
@@ -27,7 +44,19 @@ public class CheckoutController {
         }
 
         Long accountId = ((Number) account.get("id")).longValue();
-        populateCheckoutModel(model, accountId);
+
+        if ("quick".equals(mode)) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> quickInfo = (Map<String, Object>) session.getAttribute("quickCheckout");
+            if (quickInfo == null)
+                return "redirect:/cart";
+
+            populateQuickCheckoutModel(model, (Long) quickInfo.get("variantId"), (Integer) quickInfo.get("quantity"));
+        } else {
+            populateCheckoutModel(model, accountId);
+            session.removeAttribute("quickCheckout"); // Clear quick checkout if user goes back to normal checkout
+        }
+
         model.addAttribute("account", account);
 
         @SuppressWarnings("unchecked")
@@ -37,6 +66,28 @@ public class CheckoutController {
         }
 
         return "client/checkout";
+    }
+
+    private void populateQuickCheckoutModel(Model model, Long variantId, Integer quantity) {
+        String sql = "SELECT v.id as variant_id, p.id as product_id, " +
+                "p.product_name, s.size_name, col.color_name, v.price, " +
+                "(SELECT TOP 1 '/images/' + image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC) as image_url "
+                +
+                "FROM product_variants v " +
+                "JOIN products p ON v.product_id = p.id " +
+                "JOIN sizes s ON v.size_id = s.id " +
+                "JOIN colors col ON v.color_id = col.id " +
+                "WHERE v.id = ?";
+
+        Map<String, Object> item = jdbc.queryForMap(sql, variantId);
+        item.put("quantity", quantity);
+        item.put("id", -1); // Dummy ID for template logic if needed
+
+        List<Map<String, Object>> cartItems = List.of(item);
+        double total = ((Number) item.get("price")).doubleValue() * quantity;
+
+        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("totalPrice", total);
     }
 
     private void populateCheckoutModel(Model model, Long accountId) {
@@ -78,11 +129,23 @@ public class CheckoutController {
 
         Long accountId = ((Number) account.get("id")).longValue();
 
-        // 1. Lấy lại giỏ hàng để tính tổng tiền và lưu order_items
-        String cartSql = "SELECT ci.product_variant_id as variant_id, ci.quantity, v.price, v.quantity as stock " +
-                "FROM cart_items ci JOIN product_variants v ON ci.product_variant_id = v.id " +
-                "WHERE ci.user_id = ?";
-        List<Map<String, Object>> items = jdbc.queryForList(cartSql, accountId);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> quickInfo = (Map<String, Object>) session.getAttribute("quickCheckout");
+        List<Map<String, Object>> items;
+
+        if (quickInfo != null) {
+            // Quick Checkout Mode
+            String quickSql = "SELECT v.id as variant_id, v.price, v.quantity as stock FROM product_variants v WHERE v.id = ?";
+            Map<String, Object> item = jdbc.queryForMap(quickSql, quickInfo.get("variantId"));
+            item.put("quantity", quickInfo.get("quantity"));
+            items = List.of(item);
+        } else {
+            // normal cart checkout
+            String cartSql = "SELECT ci.product_variant_id as variant_id, ci.quantity, v.price, v.quantity as stock " +
+                    "FROM cart_items ci JOIN product_variants v ON ci.product_variant_id = v.id " +
+                    "WHERE ci.user_id = ?";
+            items = jdbc.queryForList(cartSql, accountId);
+        }
 
         if (items.isEmpty())
             return "redirect:/cart";
@@ -96,21 +159,44 @@ public class CheckoutController {
         double finalTotal = total + shipping;
 
         try {
-            // 2. Tạo Order
-            String orderSql = "INSERT INTO orders (user_id, total_amount, full_name, phone, address, note, payment_method, status) "
+            // 1. Map Payment Method Name to ID
+            Integer pmId;
+            try {
+                pmId = jdbc.queryForObject(
+                        "SELECT TOP 1 id FROM payment_methods WHERE method_name LIKE ? OR ? LIKE '%' + method_name + '%'",
+                        Integer.class, "%" + paymentMethod + "%", paymentMethod);
+            } catch (Exception e) {
+                pmId = 1; // Mặc định là COD
+            }
+
+            // 2. Insert into addresses to get receiver_address_id
+            // Tách address thành các thành phần (tạm thời để ward/district/province trống
+            // hoặc regex nếu cần)
+            String addressSql = "INSERT INTO addresses (receiving_name, phone_number, street_detail, is_default, user_id) VALUES (?, ?, ?, 0, ?)";
+            jdbc.update(addressSql, fullName, phone, address, accountId);
+
+            Long addressId = jdbc.queryForObject("SELECT TOP 1 id FROM addresses WHERE user_id = ? ORDER BY id DESC",
+                    Long.class, accountId);
+
+            // Generate Order Code
+            String orderCode = "ORD-" + System.currentTimeMillis() / 1000;
+
+            // 3. Tạo Order (Sửa lại đúng cột DB)
+            String orderSql = "INSERT INTO orders (order_code, user_id, total_amount, shipping_fee, final_amount, receiver_address_id, payment_method_id, status, created_at) "
                     +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, 0)";
-            jdbc.update(orderSql, accountId, finalTotal, fullName, phone, address, note, paymentMethod);
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, 1, GETDATE())";
+
+            jdbc.update(orderSql, orderCode, accountId, total, shipping, finalTotal, addressId, pmId);
 
             Long orderId = jdbc.queryForObject("SELECT TOP 1 id FROM orders WHERE user_id = ? ORDER BY id DESC",
                     Long.class, accountId);
 
-            // 3. Lưu Order Items & Trừ tồn kho
+            // 4. Lưu Order Items & Trừ tồn kho
             for (Map<String, Object> item : items) {
-                Integer variantId = (Integer) item.get("variant_id");
-                Integer buyQty = (Integer) item.get("quantity");
+                Integer variantId = ((Number) item.get("variant_id")).intValue();
+                Integer buyQty = ((Number) item.get("quantity")).intValue();
                 Double price = ((Number) item.get("price")).doubleValue();
-                Integer currentStock = (Integer) item.get("stock");
+                Integer currentStock = ((Number) item.get("stock")).intValue();
 
                 jdbc.update(
                         "INSERT INTO order_items (order_id, product_variant_id, quantity, price) VALUES (?, ?, ?, ?)",
@@ -119,28 +205,18 @@ public class CheckoutController {
                 jdbc.update("UPDATE product_variants SET quantity = ? WHERE id = ?", currentStock - buyQty, variantId);
             }
 
-            jdbc.update("DELETE FROM cart_items WHERE user_id = ?", accountId);
-
-            // 5. Cập nhật Điểm và Hạng thành viên (1000đ = 1 điểm)
-            int earnedPoints = (int) (finalTotal / 1000);
-            jdbc.update("UPDATE accounts SET points = ISNULL(points, 0) + ? WHERE id = ?", earnedPoints, accountId);
-
-            // Lấy lại tổng điểm mới để xét hạng
-            Integer totalPoints = jdbc.queryForObject("SELECT points FROM accounts WHERE id = ?", Integer.class,
-                    accountId);
-            if (totalPoints != null) {
-                int newRankId = 1; // Mặc định là Đồng (ID=1)
-                if (totalPoints >= 10000) {
-                    newRankId = 3; // Vàng (ID=3)
-                } else if (totalPoints >= 5000) {
-                    newRankId = 2; // Bạc (ID=2)
-                }
-                jdbc.update("UPDATE accounts SET membership_rank_id = ? WHERE id = ?", newRankId, accountId);
+            if (quickInfo != null) {
+                session.removeAttribute("quickCheckout");
+            } else {
+                jdbc.update("DELETE FROM cart_items WHERE user_id = ?", accountId);
             }
+
+            // ĐIỂM SẼ ĐƯỢC CỘNG KHI ADMIN XÁC NHẬN THÀNH CÔNG (Ở OrderService)
 
             return "redirect:/checkout/success";
 
         } catch (Exception e) {
+            e.printStackTrace();
             populateCheckoutModel(model, accountId);
             model.addAttribute("account", account);
             model.addAttribute("error", "Lỗi đặt hàng: " + e.getMessage());

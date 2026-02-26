@@ -38,11 +38,16 @@ public class ProductController {
                         "(SELECT TOP 1 '/images/' + image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC) as image_url, "
                         +
                         "(SELECT MIN(price) FROM product_variants WHERE product_id = p.id) as min_price " +
-                        "FROM products p WHERE p.status = 1 ");
+                        "FROM products p " +
+                        "LEFT JOIN categories c ON p.category_id = c.id " +
+                        "WHERE p.status = 1 ");
 
         // --- FILTER LOGIC ---
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND p.product_name LIKE N'%").append(keyword.trim().replace("'", "''")).append("%' ");
+            String k = keyword.trim().replace("'", "''");
+            sql.append(" AND (p.product_name LIKE N'%").append(k).append("%' ")
+                    .append(" OR p.brand_name LIKE N'%").append(k).append("%' ")
+                    .append(" OR c.category_name LIKE N'%").append(k).append("%') ");
         }
 
         if (brands != null && !brands.isEmpty()) {

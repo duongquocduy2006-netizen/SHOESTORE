@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.dao.EmptyResultDataAccessException;
 import jakarta.servlet.http.HttpSession;
@@ -17,6 +18,9 @@ public class ProfileController {
 
 	@Autowired
 	private JdbcTemplate jdbc;
+
+	@Autowired
+	private com.ShoeStore.service.OrderService orderService;
 
 	@SuppressWarnings("unchecked")
 	@GetMapping("/profile")
@@ -35,7 +39,11 @@ public class ProfileController {
 			}
 			String email = emailObj.toString();
 
-			String sql = "SELECT id, user_code, full_name, email, phone, status, role FROM accounts WHERE email = ?";
+			String sql = "SELECT a.id, a.user_code, a.full_name, a.email, a.phone, a.status, a.role, a.points, a.membership_rank_id, r.rank_name "
+					+
+					"FROM accounts a " +
+					"LEFT JOIN membership_ranks r ON a.membership_rank_id = r.id " +
+					"WHERE a.email = ?";
 			Map<String, Object> freshAccount = jdbc.queryForMap(sql, email);
 
 			// Xử lý giá trị null thành chuỗi rỗng để giao diện không bị lỗi nếu DB chưa có
@@ -92,9 +100,87 @@ public class ProfileController {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@GetMapping("/orders")
-	public String viewOrders() {
-		return "client/orders";
+	public String viewOrders(HttpSession session, Model model) {
+		Map<String, Object> sessionAccount = (Map<String, Object>) session.getAttribute("account");
+		if (sessionAccount == null) {
+			return "redirect:/login";
+		}
+
+		try {
+			Long accountId = ((Number) sessionAccount.get("id")).longValue();
+
+			// Lấy thông tin tài khoản tươi mới (có kèm hạng thẻ, điểm)
+			String sql = "SELECT a.*, r.rank_name FROM accounts a " +
+					"LEFT JOIN membership_ranks r ON a.membership_rank_id = r.id " +
+					"WHERE a.id = ?";
+			Map<String, Object> freshAccount = jdbc.queryForMap(sql, accountId);
+			model.addAttribute("account", freshAccount);
+
+			// Lấy danh sách đơn hàng
+			model.addAttribute("orders", orderService.getOrdersByUserId(accountId));
+
+			return "client/orders";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "redirect:/?error=orders_load_failed";
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@PostMapping("/orders/confirm")
+	public String processConfirmOrder(
+			@RequestParam("orderCode") String orderCode,
+			HttpSession session,
+			org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+
+		Map<String, Object> sessionAccount = (Map<String, Object>) session.getAttribute("account");
+		if (sessionAccount == null)
+			return "redirect:/login";
+
+		try {
+			Long accountId = ((Number) sessionAccount.get("id")).longValue();
+			orderService.confirmOrder(orderCode, accountId);
+			ra.addFlashAttribute("message", "Xác nhận nhận hàng thành công! Cám ơn bạn đã lựa chọn chúng tôi.");
+		} catch (Exception e) {
+			ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+		}
+		return "redirect:/orders";
+	}
+
+	@SuppressWarnings("unchecked")
+	@GetMapping("/orders/detail/{orderCode}")
+	public String viewOrderDetail(
+			@PathVariable("orderCode") String orderCode,
+			HttpSession session,
+			Model model) {
+
+		Map<String, Object> account = (Map<String, Object>) session.getAttribute("account");
+		if (account == null)
+			return "redirect:/login";
+
+		try {
+			Long userId = ((Number) account.get("id")).longValue();
+
+			// 1. Load order info
+			Map<String, Object> order = orderService.getOrderDetail(orderCode);
+			Long orderUserId = ((Number) order.get("user_id")).longValue();
+
+			// 2. Check ownership
+			if (!userId.equals(orderUserId)) {
+				return "redirect:/orders?error=unauthorized";
+			}
+
+			model.addAttribute("order", order);
+			model.addAttribute("items", orderService.getOrderItems(orderCode));
+			model.addAttribute("account", account); // For sidebar/header
+
+			return "client/order-detail";
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "redirect:/orders?error=order_not_found";
+		}
 	}
 
 	@GetMapping("/change-password")
@@ -148,5 +234,26 @@ public class ProfileController {
 			model.addAttribute("error", "Lỗi hệ thống: " + e.getMessage());
 			return "client/change-password";
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@PostMapping("/orders/cancel")
+	public String processCancelOrder(
+			@RequestParam("orderCode") String orderCode,
+			HttpSession session,
+			org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+
+		Map<String, Object> sessionAccount = (Map<String, Object>) session.getAttribute("account");
+		if (sessionAccount == null)
+			return "redirect:/login";
+
+		try {
+			Long accountId = ((Number) sessionAccount.get("id")).longValue();
+			orderService.cancelOrder(orderCode, accountId);
+			ra.addFlashAttribute("message", "Hủy đơn hàng thành công.");
+		} catch (Exception e) {
+			ra.addFlashAttribute("error", "Lỗi hủy đơn: " + e.getMessage());
+		}
+		return "redirect:/orders";
 	}
 }

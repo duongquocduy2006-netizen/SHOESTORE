@@ -40,7 +40,7 @@ public class AuthController {
         Map<String, Object> account = null;
         try {
             // Lấy thông tin tài khoản từ CSDL dựa trên Email
-            String sql = "SELECT id, password, role, full_name, status, email, phone FROM accounts WHERE email = ?";
+            String sql = "SELECT id, password, role, full_name, status, email, phone, points, membership_rank_id FROM accounts WHERE email = ?";
             account = jdbc.queryForMap(sql, email);
         } catch (EmptyResultDataAccessException e) {
             // Không tìm thấy Email trong database

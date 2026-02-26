@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ShoeStore.model.Brand;
 import com.ShoeStore.repository.BrandRepository;
+import com.ShoeStore.repository.ProductRepository;
 import java.util.List;
 
 @Controller
@@ -14,6 +16,9 @@ public class AdminBrandManager {
 
     @Autowired
     private BrandRepository brandRepo;
+
+    @Autowired
+    private ProductRepository productRepo;
 
     @GetMapping
     public String index(Model model) {
@@ -55,8 +60,15 @@ public class AdminBrandManager {
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable("id") Integer id) {
-        brandRepo.deleteById(id);
+    public String delete(@PathVariable("id") Integer id, RedirectAttributes ra) {
+        Brand brand = brandRepo.findById(id).orElse(null);
+        if (brand != null && productRepo.existsByBrandName(brand.getName())) {
+            ra.addFlashAttribute("error",
+                    "Không thể xóa thương hiệu này vì vẫn còn sản phẩm thuộc thương hiệu " + brand.getName() + "!");
+        } else {
+            brandRepo.deleteById(id);
+            ra.addFlashAttribute("message", "Xóa thương hiệu thành công!");
+        }
         return "redirect:/admin/brands";
     }
 }

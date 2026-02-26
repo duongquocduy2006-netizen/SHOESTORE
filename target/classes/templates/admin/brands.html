@@ -238,6 +238,18 @@
                 </a>
             </div>
 
+            <!-- ALERT MESSAGES -->
+            <div th:if="${message}"
+                style="background: rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; color: #4ade80; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-family: 'Poppins'; font-size: 13px; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-check-circle-fill"></i>
+                <span th:text="${message}">Thông báo thành công</span>
+            </div>
+            <div th:if="${error}"
+                style="background: rgba(229, 9, 20, 0.1); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 15px; border-radius: 4px; margin-bottom: 20px; font-family: 'Poppins'; font-size: 13px; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span th:text="${error}">Thông báo lỗi</span>
+            </div>
+
             <div class="toolbar">
                 <div class="search-box">
                     <i class="bi bi-search search-icon"></i>

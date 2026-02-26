@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>Lịch sử đơn hàng</title>
-    
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <style>
         /* --- COPY CORE VARIABLES TỪ TRANG PROFILE --- */
         :root {
@@ -33,10 +36,42 @@
         }
 
         /* Ambient Blobs */
-        .ambient-blob { position: absolute; filter: blur(80px); z-index: -1; opacity: 0.6; animation: moveBlob 20s infinite alternate; }
-        .blob-1 { top: 10%; left: 10%; width: 300px; height: 300px; background: #ffdee9; border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-        .blob-2 { bottom: 10%; right: 10%; width: 350px; height: 350px; background: #c9efff; border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; animation-delay: -5s; }
-        @keyframes moveBlob { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(50px, 50px) rotate(20deg); } }
+        .ambient-blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: moveBlob 20s infinite alternate;
+        }
+
+        .blob-1 {
+            top: 10%;
+            left: 10%;
+            width: 300px;
+            height: 300px;
+            background: #ffdee9;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        }
+
+        .blob-2 {
+            bottom: 10%;
+            right: 10%;
+            width: 350px;
+            height: 350px;
+            background: #c9efff;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+            animation-delay: -5s;
+        }
+
+        @keyframes moveBlob {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(50px, 50px) rotate(20deg);
+            }
+        }
 
         /* Glass Panel */
         .glass-panel {
@@ -53,19 +88,94 @@
         }
 
         /* Sidebar Styles (Giữ nguyên) */
-        .profile-cover { height: 120px; background: var(--accent-gradient); position: relative; }
-        .user-block { margin-top: -60px; text-align: center; position: relative; z-index: 2; padding-bottom: 20px; }
-        .user-avatar { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.8); box-shadow: 0 10px 25px rgba(255, 59, 59, 0.3); transition: 0.5s; }
-        .user-avatar:hover { transform: scale(1.05) rotate(5deg); }
-        .vip-crown { position: absolute; top: -15px; right: -5px; font-size: 24px; color: #FFD700; animation: floatCrown 3s ease-in-out infinite; }
-        @keyframes floatCrown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        
-        .menu-link { display: flex; align-items: center; padding: 16px 30px; color: #555; font-weight: 600; text-decoration: none; transition: 0.3s; border-radius: 0 50px 50px 0; margin-right: 20px; }
-        .menu-link i { width: 35px; font-size: 18px; color: #999; transition: 0.3s; }
-        .menu-link:hover { background: rgba(255, 59, 59, 0.05); color: var(--accent-color); padding-left: 35px; }
-        .menu-link:hover i { color: var(--accent-color); transform: scale(1.2); }
-        .menu-link.active { background: linear-gradient(90deg, rgba(255, 59, 59, 0.1), transparent); color: var(--accent-color); border-left: 4px solid var(--accent-color); }
-        .menu-link.active i { color: var(--accent-color); }
+        .profile-cover {
+            height: 120px;
+            background: var(--accent-gradient);
+            position: relative;
+        }
+
+        .user-block {
+            margin-top: -60px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            padding-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 25px rgba(255, 59, 59, 0.3);
+            transition: 0.5s;
+        }
+
+        .user-avatar:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .vip-crown {
+            position: absolute;
+            top: -15px;
+            right: -5px;
+            font-size: 24px;
+            color: #FFD700;
+            animation: floatCrown 3s ease-in-out infinite;
+        }
+
+        @keyframes floatCrown {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 16px 30px;
+            color: #555;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+            border-radius: 0 50px 50px 0;
+            margin-right: 20px;
+        }
+
+        .menu-link i {
+            width: 35px;
+            font-size: 18px;
+            color: #999;
+            transition: 0.3s;
+        }
+
+        .menu-link:hover {
+            background: rgba(255, 59, 59, 0.05);
+            color: var(--accent-color);
+            padding-left: 35px;
+        }
+
+        .menu-link:hover i {
+            color: var(--accent-color);
+            transform: scale(1.2);
+        }
+
+        .menu-link.active {
+            background: linear-gradient(90deg, rgba(255, 59, 59, 0.1), transparent);
+            color: var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .menu-link.active i {
+            color: var(--accent-color);
+        }
 
         /* --- NEW STYLES FOR ORDERS --- */
         .content-header h4 {
@@ -93,7 +203,7 @@
         .luxury-order-card:hover {
             background: rgba(255, 255, 255, 0.9);
             transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
             border-color: rgba(255, 59, 59, 0.3);
         }
 
@@ -101,27 +211,53 @@
         .luxury-order-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
             background: #ddd;
             transition: 0.3s;
         }
-        
-        .luxury-order-card:hover::before { width: 6px; }
-        .luxury-order-card.status-done::before { background: var(--success-color); }
-        .luxury-order-card.status-wait::before { background: var(--warning-color); }
+
+        .luxury-order-card:hover::before {
+            width: 6px;
+        }
+
+        .luxury-order-card.status-done::before {
+            background: var(--success-color);
+        }
+
+        .luxury-order-card.status-wait::before {
+            background: var(--warning-color);
+        }
+
+        .luxury-order-card.status-delivered::before {
+            background: #a855f7;
+        }
 
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px dashed rgba(0,0,0,0.1);
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
             padding-bottom: 15px;
             margin-bottom: 15px;
         }
 
-        .order-id { font-weight: 800; font-size: 18px; color: var(--text-dark); letter-spacing: 0.5px; }
-        .order-date { font-size: 13px; color: #888; font-weight: 500; margin-left: 10px; }
-        
+        .order-id {
+            font-weight: 800;
+            font-size: 18px;
+            color: var(--text-dark);
+            letter-spacing: 0.5px;
+        }
+
+        .order-date {
+            font-size: 13px;
+            color: #888;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
         /* Badges */
         .badge-luxury {
             padding: 8px 16px;
@@ -133,23 +269,41 @@
             display: inline-flex;
             align-items: center;
         }
-        
-        .badge-success-lux { background: rgba(0, 184, 148, 0.1); color: var(--success-color); border: 1px solid rgba(0, 184, 148, 0.2); }
-        .badge-warning-lux { background: rgba(253, 203, 110, 0.1); color: #d35400; border: 1px solid rgba(253, 203, 110, 0.2); }
+
+        .badge-success-lux {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(0, 184, 148, 0.2);
+        }
+
+        .badge-warning-lux {
+            background: rgba(253, 203, 110, 0.1);
+            color: #d35400;
+            border: 1px solid rgba(253, 203, 110, 0.2);
+        }
 
         /* Product Info */
         .product-thumb {
-            width: 80px; height: 80px;
+            width: 80px;
+            height: 80px;
             border-radius: 12px;
             object-fit: cover;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             background: #fff;
             padding: 5px;
         }
-        
-        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
-        .product-meta { font-size: 13px; color: #777; }
-        
+
+        .product-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .product-meta {
+            font-size: 13px;
+            color: #777;
+        }
+
         .price-tag {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
@@ -168,36 +322,43 @@
             transition: 0.3s;
             background: transparent;
         }
-        
+
         .btn-outline-luxury:hover {
             border-color: var(--accent-color);
             color: var(--accent-color);
             background: rgba(255, 59, 59, 0.05);
         }
-
     </style>
 </head>
+
 <body>
     <div th:replace="~{client/fragments/header :: header}"></div>
-    
+
     <div class="ambient-blob blob-1"></div>
     <div class="ambient-blob blob-2"></div>
 
     <div class="container py-5">
         <div class="row g-5">
-            
+
             <div class="col-lg-4 animate__animated animate__fadeInLeft">
                 <div class="glass-panel js-tilt">
                     <div class="profile-cover"></div>
                     <div class="user-block">
                         <div class="avatar-box position-relative d-inline-block">
-                            <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random" class="user-avatar">
+                            <img th:src="${'https://ui-avatars.com/api/?name=' + account.full_name + '&background=random'}"
+                                class="user-avatar">
                             <i class="fa fa-crown vip-crown"></i>
                         </div>
-                        <h5 class="mt-3 fw-bold">Nguyễn Văn A</h5>
-                        <span class="badge bg-dark rounded-pill px-3 py-2">Diamond Member</span>
+                        <h5 class="mt-3 fw-bold" th:text="${account.full_name}">Tên người dùng</h5>
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <span class="badge bg-dark rounded-pill px-3 py-2"
+                                th:text="${account.rank_name ?: 'Đồng'}">Member</span>
+                            <span class="text-muted small fw-bold"
+                                th:text="${#numbers.formatDecimal(account.points ?: 0, 0, 'POINT', 0, 'POINT') + ' PTS'}">0
+                                PTS</span>
+                        </div>
                     </div>
-                    
+
                     <div class="pb-4 pt-2">
                         <a th:href="@{/profile}" class="menu-link">
                             <i class="fa-regular fa-id-badge"></i> Thông tin cá nhân
@@ -217,98 +378,144 @@
             </div>
 
             <div class="col-lg-8 animate__animated animate__fadeInUp animate__delay-1s">
-                <div class="glass-panel p-5 js-tilt" style="transform-style: preserve-3d; transform: perspective(1000px);">
+                <div class="glass-panel p-5 js-tilt"
+                    style="transform-style: preserve-3d; transform: perspective(1000px);">
                     <div class="content-header d-flex justify-content-between align-items-end">
                         <div>
                             <h4>Đơn hàng của tôi</h4>
                             <p class="text-muted mb-0">Theo dõi trạng thái và lịch sử mua sắm</p>
                         </div>
-                        <div class="text-muted small"><i class="fa-solid fa-filter me-1"></i> Hiển thị: 2 đơn gần nhất</div>
+                        <div class="text-muted small">
+                            <i class="fa-solid fa-filter me-1"></i> Hiển thị: <span th:text="${orders.size()}">0</span>
+                            đơn gần nhất
+                        </div>
                     </div>
-                    
+
+                    <!-- Alert Messages -->
+                    <div th:if="${message}"
+                        class="alert alert-success alert-dismissible fade show mt-3 rounded-pill px-4 animate__animated animate__fadeInDown"
+                        role="alert">
+                        <i class="fa-solid fa-circle-check me-2"></i> <span th:text="${message}">Success message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${error}"
+                        class="alert alert-danger alert-dismissible fade show mt-3 rounded-pill px-4 animate__animated animate__shakeX"
+                        role="alert">
+                        <i class="fa-solid fa-circle-exclamation me-2"></i> <span th:text="${error}">Error
+                            message</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
                     <div class="mt-4">
-                        
-                        <div class="luxury-order-card status-done">
+                        <div th:if="${orders.isEmpty()}" class="text-center py-5">
+                            <i class="fa-solid fa-box-open fa-3x text-muted mb-3 d-block"></i>
+                            <p class="text-muted">Bạn chưa có đơn hàng nào.</p>
+                            <a href="/" class="btn btn-outline-danger rounded-pill">Tiếp tục mua sắm</a>
+                        </div>
+
+                        <div th:each="order : ${orders}" class="luxury-order-card"
+                            th:classappend="${order.status == 3 ? 'status-done' : (order.status == 4 ? 'status-canceled' : (order.status == 5 ? 'status-delivered' : 'status-wait'))}">
                             <div class="order-header">
                                 <div>
-                                    <span class="order-id">#ORD-9999</span>
-                                    <span class="order-date"><i class="fa-regular fa-calendar me-1"></i> 23/01/2026</span>
+                                    <span class="order-id" th:text="${'#' + order.order_code}">#ORD-0000</span>
+                                    <span class="order-date">
+                                        <i class="fa-regular fa-calendar me-1"></i>
+                                        <span
+                                            th:text="${#dates.format(order.created_at, 'dd/MM/yyyy HH:mm')}">Date</span>
+                                    </span>
                                 </div>
-                                <span class="badge-luxury badge-success-lux">
-                                    <i class="fa-solid fa-check-circle me-1"></i> Giao thành công
+
+                                <!-- Status Badge -->
+                                <span th:if="${order.status == 1}" class="badge-luxury badge-warning-lux">
+                                    <i class="fa-solid fa-clock me-1"></i> Chờ duyệt
+                                </span>
+                                <span th:if="${order.status == 2}" class="badge-luxury badge-warning-lux"
+                                    style="background: rgba(52, 152, 219, 0.1); color: #3498db; border-color: rgba(52, 152, 219, 0.2);">
+                                    <i class="fa-solid fa-truck-fast me-1"></i> Đang giao
+                                </span>
+                                <span th:if="${order.status == 3}" class="badge-luxury badge-success-lux">
+                                    <i class="fa-solid fa-check-circle me-1"></i> Thành công
+                                </span>
+                                <span th:if="${order.status == 5}" class="badge-luxury"
+                                    style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border-color: rgba(168, 85, 247, 0.2);">
+                                    <i class="fa-solid fa-hourglass-half me-1"></i> Chờ duyệt hoàn tất
+                                </span>
+                                <span th:if="${order.status == 4}" class="badge-luxury"
+                                    style="background: rgba(149, 165, 166, 0.1); color: #95a5a6; border-color: rgba(149, 165, 166, 0.2);">
+                                    <i class="fa-solid fa-times-circle me-1"></i> Đã hủy
                                 </span>
                             </div>
-                            
+
                             <div class="d-flex align-items-center gap-3">
-                                
-                                <img src="https://assets.adidas.com/images/w_600,f_auto,q_auto/4e894c2b76dd4c8e9013aafc016047af_9366/Superstar_Shoes_White_FV3284_01_standard.jpg" class="product-thumb">
+                                <img th:src="${order.first_product_image != null ? order.first_product_image : 'https://placehold.co/100x100?text=Shoe'}"
+                                    class="product-thumb">
                                 <div class="flex-grow-1">
-                                    <div class="product-title">Adidas Superstar Original</div>
-                                    <div class="product-meta">Size: 42 • Màu: Trắng/Đen • Số lượng: 1</div>
+                                    <div class="product-title" th:text="${order.first_product_name}">Tên sản phẩm</div>
+                                    <div class="product-meta"
+                                        th:text="${(order.total_items > 1 ? 'Và ' + (order.total_items - 1) + ' sản phẩm khác' : '1 sản phẩm')}">
+                                        1 sản phẩm</div>
                                 </div>
                                 <div class="text-end">
-                                    <div class="price-tag">2.500.000đ</div>
+                                    <div class="price-tag"
+                                        th:text="${#numbers.formatDecimal(order.final_amount, 0, 'POINT', 0, 'POINT') + '₫'}">
+                                        0₫</div>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-light">
-                                <a href="#" class="btn-outline-luxury">Đánh giá</a>
-                                <a href="#" class="btn-outline-luxury" style="border-color: var(--text-dark); color: var(--text-dark);">Mua lại</a>
+                                <a th:href="@{'/orders/detail/' + ${order.order_code}}" class="btn-outline-luxury">Chi
+                                    tiết đơn hàng</a>
+                                <a th:if="${order.status == 3}" href="#" class="btn-outline-luxury"
+                                    style="border-color: var(--text-dark); color: var(--text-dark);">Mua lại</a>
+                                <form th:if="${order.status == 1}" th:action="@{/orders/cancel}" method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')">
+                                    <input type="hidden" name="orderCode" th:value="${order.order_code}">
+                                    <button type="submit" class="btn-outline-luxury text-danger"
+                                        style="border-color: rgba(255, 59, 59, 0.3); background: transparent;">
+                                        Hủy đơn
+                                    </button>
+                                </form>
+
+                                <!-- Customer Confirmation Button -->
+                                <form th:if="${order.status == 2}" th:action="@{/orders/confirm}" method="POST"
+                                    class="d-inline">
+                                    <input type="hidden" name="orderCode" th:value="${order.order_code}">
+                                    <button type="submit" class="btn-outline-luxury"
+                                        style="background: var(--accent-gradient); color: white; border: none;">
+                                        Đã nhận được hàng
+                                    </button>
+                                </form>
                             </div>
                         </div>
-
-                        <div class="luxury-order-card status-wait">
-                            <div class="order-header">
-                                <div>
-                                    <span class="order-id">#ORD-8888</span>
-                                    <span class="order-date"><i class="fa-regular fa-calendar me-1"></i> 20/01/2026</span>
-                                </div>
-                                <span class="badge-luxury badge-warning-lux">
-                                    <i class="fa-solid fa-truck-fast me-1"></i> Đang vận chuyển
-                                </span>
-                            </div>
-                            
-                            <div class="d-flex align-items-center gap-3">
-                                
-                                <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png" class="product-thumb">
-                                <div class="flex-grow-1">
-                                    <div class="product-title">Nike Air Force 1 '07</div>
-                                    <div class="product-meta">Size: 40 • Màu: Trắng • Số lượng: 1</div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="price-tag">3.000.000đ</div>
-                                </div>
-                            </div>
-                            
-                            <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top border-light">
-                                <a href="#" class="btn-outline-luxury">Chi tiết đơn hàng</a>
-                                <a href="#" class="btn-outline-luxury" style="border-color: var(--accent-color); color: var(--accent-color);">Theo dõi</a>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
+
         </div>
+    </div>
+    </div>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.querySelectorAll('.js-tilt').forEach(card => {
-            card.addEventListener('mousemove', function(e) {
+            card.addEventListener('mousemove', function (e) {
                 let rect = card.getBoundingClientRect();
                 let x = e.clientX - rect.left;
                 let y = e.clientY - rect.top;
                 let centerX = rect.width / 2;
                 let centerY = rect.height / 2;
-                let rotateX = ((y - centerY) / centerY) * -3; 
+                let rotateX = ((y - centerY) / centerY) * -3;
                 let rotateY = ((x - centerX) / centerX) * 3;
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
-            card.addEventListener('mouseleave', function() {
+            card.addEventListener('mouseleave', function () {
                 card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
             });
         });
     </script>
 </body>
+
 </html>

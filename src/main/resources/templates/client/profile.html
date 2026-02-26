@@ -310,7 +310,13 @@
                             <i class="fa fa-crown vip-crown"></i>
                         </div>
                         <h5 class="mt-3 fw-bold" th:text="${accountInfo.full_name}">Nguyễn Văn A</h5>
-                        <span class="badge bg-dark rounded-pill px-3 py-2">Thành viên Luxury</span>
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <span class="badge bg-dark rounded-pill px-3 py-2"
+                                th:text="${accountInfo.rank_name ?: 'Đồng'}">Thành viên Luxury</span>
+                            <span class="text-muted small fw-bold"
+                                th:text="${#numbers.formatDecimal(accountInfo.points ?: 0, 0, 'POINT', 0, 'POINT') + ' PTS'}">0
+                                PTS</span>
+                        </div>
                     </div>
 
                     <div class="pb-4 pt-2">

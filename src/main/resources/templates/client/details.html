@@ -738,15 +738,7 @@
                 return;
             }
             const qty = document.getElementById('qtyInput').value;
-            $.post('/cart/add', { variantId: selectedVariantId, quantity: qty }, function (res) {
-                if (res.success) {
-                    window.location.href = '/cart';
-                } else if (res.message === 'Chưa đăng nhập') {
-                    window.location.href = '/login';
-                } else {
-                    alert(res.message);
-                }
-            });
+            window.location.href = `/checkout/quick?variantId=${selectedVariantId}&quantity=${qty}`;
         }
 
         // JS: Quantity
