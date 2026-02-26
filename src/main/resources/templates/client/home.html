@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <title>ShoeStore | Official Website</title>
-    
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
     <style>
         /* --- VARIABLES --- */
@@ -28,7 +31,16 @@
             overflow-x: hidden;
         }
 
-        h1, h2, h3, h4, h5, .display-1, .btn-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        .display-1,
+        .btn-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
 
         /* --- 1. HERO SLIDER --- */
         .hero-section {
@@ -36,156 +48,401 @@
             position: relative;
             overflow: hidden;
             /* QUAN TRỌNG: Đặt z-index thấp hơn Header (Header là 9999) */
-            z-index: 1; 
+            z-index: 1;
         }
 
-        .carousel-item { height: 100vh; background: #000; }
-        
+        .carousel-item {
+            height: 100vh;
+            background: #000;
+        }
+
         .hero-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; opacity: 0.6;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
             animation: zoomSlow 20s infinite alternate;
         }
-        @keyframes zoomSlow { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        @keyframes zoomSlow {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.1);
+            }
+        }
 
         .hero-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to top, #050505 5%, transparent 50%, rgba(0,0,0,0.6) 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, #050505 5%, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
         }
 
         .hero-content {
-            position: absolute; bottom: 15%; left: 8%;
-            z-index: 2; max-width: 800px;
+            position: absolute;
+            bottom: 15%;
+            left: 8%;
+            z-index: 2;
+            max-width: 800px;
         }
 
         .hero-subtitle {
-            font-size: 16px; letter-spacing: 4px; color: var(--accent-cyan);
-            margin-bottom: 10px; font-weight: 600; text-transform: uppercase;
+            font-size: 16px;
+            letter-spacing: 4px;
+            color: var(--accent-cyan);
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
             animation: fadeInUp 1s ease 0.5s backwards;
         }
 
         .hero-title {
-            font-size: 80px; font-weight: 800; line-height: 0.9;
-            margin-bottom: 30px; text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            font-size: 80px;
+            font-weight: 800;
+            line-height: 0.9;
+            margin-bottom: 30px;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             animation: fadeInUp 1s ease 0.7s backwards;
         }
 
         .btn-cta {
-            padding: 15px 40px; background: var(--accent-red); color: #fff; border: none;
-            font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 2px;
-            text-transform: uppercase; clip-path: polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%);
-            transition: var(--transition); display: inline-block; text-decoration: none;
+            padding: 15px 40px;
+            background: var(--accent-red);
+            color: #fff;
+            border: none;
+            font-family: 'Oswald', sans-serif;
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            clip-path: polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%);
+            transition: var(--transition);
+            display: inline-block;
+            text-decoration: none;
             animation: fadeInUp 1s ease 0.9s backwards;
         }
-        .btn-cta:hover { background: #fff; color: #000; transform: translateY(-5px); }
+
+        .btn-cta:hover {
+            background: #fff;
+            color: #000;
+            transform: translateY(-5px);
+        }
 
         /* --- 2. MARQUEE BANNER --- */
         .marquee-strip {
-            background: var(--accent-red); color: #fff; padding: 12px 0;
-            white-space: nowrap; overflow: hidden; font-family: 'Oswald', sans-serif;
-            font-size: 14px; letter-spacing: 2px; font-weight: 700;
-            transform: skewY(-2deg); margin: 40px 0; border-top: 2px solid #fff; border-bottom: 2px solid #fff;
+            background: var(--accent-red);
+            color: #fff;
+            padding: 12px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            font-family: 'Oswald', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-weight: 700;
+            transform: skewY(-2deg);
+            margin: 40px 0;
+            border-top: 2px solid #fff;
+            border-bottom: 2px solid #fff;
         }
-        .marquee-content { display: inline-block; animation: marquee 20s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
 
         /* --- 3. TRENDING CATEGORIES --- */
         .section-header {
-            display: flex; justify-content: space-between; align-items: end;
-            margin-bottom: 40px; border-bottom: 1px solid var(--border-glass); padding-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 20px;
         }
-        .section-title { font-size: 40px; margin: 0; }
-        .view-link { color: #888; text-decoration: none; transition: 0.3s; }
-        .view-link:hover { color: #fff; letter-spacing: 1px; }
+
+        .section-title {
+            font-size: 40px;
+            margin: 0;
+        }
+
+        .view-link {
+            color: #888;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .view-link:hover {
+            color: #fff;
+            letter-spacing: 1px;
+        }
 
         .cat-card {
-            position: relative; height: 400px; overflow: hidden; border-radius: 8px; cursor: pointer;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
         }
+
         .cat-img {
-            width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
         }
+
         .cat-overlay {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(to top, #000 0%, transparent 60%);
-            display: flex; flex-direction: column; justify-content: flex-end; padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 30px;
         }
-        .cat-name { font-size: 32px; font-weight: 700; margin: 0; transform: translateY(10px); transition: 0.4s; }
-        .cat-btn { 
-            color: var(--accent-cyan); font-size: 14px; text-transform: uppercase; letter-spacing: 2px; 
-            margin-top: 10px; opacity: 0; transform: translateY(20px); transition: 0.4s; 
+
+        .cat-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+            transform: translateY(10px);
+            transition: 0.4s;
         }
-        
-        .cat-card:hover .cat-img { transform: scale(1.1); }
-        .cat-card:hover .cat-name { transform: translateY(0); }
-        .cat-card:hover .cat-btn { opacity: 1; transform: translateY(0); }
+
+        .cat-btn {
+            color: var(--accent-cyan);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.4s;
+        }
+
+        .cat-card:hover .cat-img {
+            transform: scale(1.1);
+        }
+
+        .cat-card:hover .cat-name {
+            transform: translateY(0);
+        }
+
+        .cat-card:hover .cat-btn {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
         /* --- 4. FEATURED DROP --- */
         .featured-section {
-            background: #111; margin: 80px 0; position: relative; overflow: hidden;
+            background: #111;
+            margin: 80px 0;
+            position: relative;
+            overflow: hidden;
         }
-        .featured-img-box { position: relative; height: 600px; }
-        .featured-img { width: 100%; height: 100%; object-fit: cover; }
-        
+
+        .featured-img-box {
+            position: relative;
+            height: 600px;
+        }
+
+        .featured-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .featured-content {
-            padding: 80px; display: flex; flex-direction: column; justify-content: center; height: 100%;
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
         }
-        .drop-tag { 
-            border: 1px solid var(--accent-red); color: var(--accent-red); 
-            padding: 5px 15px; display: inline-block; width: fit-content; margin-bottom: 20px;
-            font-family: 'Oswald', sans-serif; letter-spacing: 2px;
+
+        .drop-tag {
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 5px 15px;
+            display: inline-block;
+            width: fit-content;
+            margin-bottom: 20px;
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 2px;
         }
-        
+
         /* --- 5. PRODUCTS --- */
         .product-card {
-            background: var(--card-bg); border: 1px solid var(--border-glass); border-radius: 8px; 
-            overflow: hidden; transition: var(--transition); position: relative;
+            background: var(--card-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
         }
-        .product-card:hover { transform: translateY(-5px); border-color: #444; }
-        
-        .card-img-box { position: relative; padding-top: 100%; background: #1a1a1a; overflow: hidden; }
-        .card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: 0.6s ease; }
-        .product-card:hover .card-img { transform: scale(1.08); opacity: 0.8; }
-        
-        .img-link { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: #444;
+        }
+
+        .card-img-box {
+            position: relative;
+            padding-top: 100%;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .card-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.6s ease;
+        }
+
+        .product-card:hover .card-img {
+            transform: scale(1.08);
+            opacity: 0.8;
+        }
+
+        .img-link {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
 
         .card-actions {
-            position: absolute; bottom: 15px; left: 0; width: 100%; 
-            display: flex; justify-content: center; gap: 10px; z-index: 2;
-            opacity: 0; transform: translateY(20px); transition: 0.3s;
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.3s;
         }
-        .product-card:hover .card-actions { opacity: 1; transform: translateY(0); }
-        
+
+        .product-card:hover .card-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .action-btn {
-            width: 40px; height: 40px; background: #fff; color: #000; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; text-decoration: none;
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
             transition: 0.2s;
         }
-        .action-btn:hover { background: var(--accent-red); color: #fff; }
 
-        .card-info { padding: 15px; }
-        .card-cat { font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 1px; }
-        .card-title a { color: #fff; text-decoration: none; font-family: 'Oswald', sans-serif; font-size: 16px; transition: 0.2s; }
-        .card-title a:hover { color: var(--accent-red); }
-        .card-price { color: #fff; font-weight: 600; margin-top: 5px; }
+        .action-btn:hover {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        .action-btn.active {
+            background: var(--accent-red);
+            color: #fff;
+            border-color: var(--accent-red);
+        }
+
+        .card-info {
+            padding: 15px;
+        }
+
+        .card-cat {
+            font-size: 12px;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-title a {
+            color: #fff;
+            text-decoration: none;
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .card-title a:hover {
+            color: var(--accent-red);
+        }
+
+        .card-price {
+            color: #fff;
+            font-weight: 600;
+            margin-top: 5px;
+        }
 
         @media (max-width: 768px) {
-            .hero-title { font-size: 40px; }
-            .hero-content { bottom: 10%; width: 90%; }
-            .featured-img-box { height: 300px; }
-            .featured-content { padding: 40px 20px; }
+            .hero-title {
+                font-size: 40px;
+            }
+
+            .hero-content {
+                bottom: 10%;
+                width: 90%;
+            }
+
+            .featured-img-box {
+                height: 300px;
+            }
+
+            .featured-content {
+                padding: 40px 20px;
+            }
         }
-        
+
         .light-beam {
             position: fixed;
-            bottom: -50px; /* Bắt đầu từ dưới màn hình một chút */
-            width: 6px;    /* Độ mảnh của tia sáng */
-            height: 50px;  /* Chiều dài ban đầu */
+            bottom: -50px;
+            /* Bắt đầu từ dưới màn hình một chút */
+            width: 6px;
+            /* Độ mảnh của tia sáng */
+            height: 50px;
+            /* Chiều dài ban đầu */
             /* Tạo hiệu ứng vệt sáng gradient mờ 2 đầu */
             background: linear-gradient(to top, transparent, white, transparent);
             /* Hiệu ứng phát sáng rực rỡ xung quanh */
-            box-shadow: 0 0 20px 5px white; 
+            box-shadow: 0 0 20px 5px white;
             opacity: 1;
-            border-radius: 50%; /* Bo tròn đầu cho mềm mại */
+            border-radius: 50%;
+            /* Bo tròn đầu cho mềm mại */
             pointer-events: none;
             z-index: 99999;
             /* Hiệu ứng chuyển động bay lên nhanh dần */
@@ -194,26 +451,36 @@
 
         /* Khi class này được thêm vào, tia sáng sẽ bay lên và kéo dài ra */
         .light-beam.shoot {
-            bottom: 80% !important; /* Bay lên gần đỉnh màn hình */
-            height: 300px;          /* Kéo dài ra như một vệt sao băng */
-            opacity: 0;             /* Mờ dần khi lên cao */
+            bottom: 80% !important;
+            /* Bay lên gần đỉnh màn hình */
+            height: 300px;
+            /* Kéo dài ra như một vệt sao băng */
+            opacity: 0;
+            /* Mờ dần khi lên cao */
         }
-        
-
     </style>
 </head>
+
 <body>
-	<div id="fireworks-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; background: transparent;"></div>
+    <div id="fireworks-container"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; background: transparent;">
+    </div>
 
     <div th:replace="~{client/fragments/header :: header}"></div>
 
-   <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000" style="position: relative;">
-        
-        <div id="fw-left" style="position: absolute; bottom: 0; left: 0; width: 300px; height: 100%; z-index: 10; pointer-events: none;"></div>
-        <div id="fw-right" style="position: absolute; bottom: 0; right: 0; width: 300px; height: 100%; z-index: 10; pointer-events: none;"></div>
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000"
+        style="position: relative;">
+
+        <div id="fw-left"
+            style="position: absolute; bottom: 0; left: 0; width: 300px; height: 100%; z-index: 10; pointer-events: none;">
+        </div>
+        <div id="fw-right"
+            style="position: absolute; bottom: 0; right: 0; width: 300px; height: 100%; z-index: 10; pointer-events: none;">
+        </div>
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="https://brand.assets.adidas.com/image/upload/f_auto,q_auto,fl_lossy/if_w_gt_1920,w_1920/running_fw23_supernova_rise_global_educate_hp_banner_interactive_d_72404e330a.jpg" class="hero-bg">
+                <img src="https://brand.assets.adidas.com/image/upload/f_auto,q_auto,fl_lossy/if_w_gt_1920,w_1920/running_fw23_supernova_rise_global_educate_hp_banner_interactive_d_72404e330a.jpg"
+                    class="hero-bg">
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
                     <div class="hero-subtitle">New Collection 2026</div>
@@ -222,7 +489,8 @@
                 </div>
             </div>
             <div class="carousel-item">
-                <img src="https://static.nike.com/a/images/f_auto/dpr_1.3,cs_srgb/w_1423,c_limit/6f8e7960-466d-4952-a39c-482087596d66/jordan-1-lost-and-found-chicago-release-date.jpg" class="hero-bg">
+                <img src="https://static.nike.com/a/images/f_auto/dpr_1.3,cs_srgb/w_1423,c_limit/6f8e7960-466d-4952-a39c-482087596d66/jordan-1-lost-and-found-chicago-release-date.jpg"
+                    class="hero-bg">
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
                     <div class="hero-subtitle">Icons Never Die</div>
@@ -231,18 +499,22 @@
                 </div>
             </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev" style="z-index: 3;">
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"
+            style="z-index: 3;">
             <span class="carousel-control-prev-icon"></span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next" style="z-index: 3;">
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"
+            style="z-index: 3;">
             <span class="carousel-control-next-icon"></span>
         </button>
     </div>
 
     <div class="marquee-strip">
         <div class="marquee-content">
-            FREE SHIPPING WORLDWIDE &nbsp; • &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp; JUST LANDED &nbsp; • &nbsp; 
-            FREE SHIPPING WORLDWIDE &nbsp; • &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp; JUST LANDED &nbsp; • &nbsp;
+            FREE SHIPPING WORLDWIDE &nbsp; • &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp; JUST
+            LANDED &nbsp; • &nbsp;
+            FREE SHIPPING WORLDWIDE &nbsp; • &nbsp; NEW SEASON DROP &nbsp; • &nbsp; LIMITED EDITION &nbsp; • &nbsp; JUST
+            LANDED &nbsp; • &nbsp;
         </div>
     </div>
 
@@ -289,7 +561,8 @@
         <div class="row g-0">
             <div class="col-lg-6">
                 <div class="featured-img-box">
-                    <img src="https://static.nike.com/a/images/f_auto,cs_srgb/w_1536,c_limit/d265bf7f-37b3-4024-9b3e-526cb8390d4e/nike-just-do-it.jpg" class="featured-img">
+                    <img src="https://static.nike.com/a/images/f_auto,cs_srgb/w_1536,c_limit/d265bf7f-37b3-4024-9b3e-526cb8390d4e/nike-just-do-it.jpg"
+                        class="featured-img">
                 </div>
             </div>
             <div class="col-lg-6">
@@ -297,7 +570,8 @@
                     <span class="drop-tag">FEATURED DROP</span>
                     <h2 class="display-1 fw-bold text-white mb-4">TRAVIS SCOTT <br> X AIR JORDAN</h2>
                     <p class="text-white-50 mb-5" style="max-width: 500px; line-height: 1.8;">
-                        Sự kết hợp bùng nổ nhất năm đã trở lại. Thiết kế Reverse Mocha độc đáo cùng chất liệu da lộn cao cấp. Số lượng cực kỳ giới hạn.
+                        Sự kết hợp bùng nổ nhất năm đã trở lại. Thiết kế Reverse Mocha độc đáo cùng chất liệu da lộn cao
+                        cấp. Số lượng cực kỳ giới hạn.
                     </p>
                     <a th:href="@{/details}" class="btn-cta bg-white text-black hover-red">XEM CHI TIẾT</a>
                 </div>
@@ -310,93 +584,68 @@
             <h2 class="section-title">HÀNG MỚI VỀ</h2>
             <a th:href="@{/new-arrivals}" class="view-link">Xem tất cả <i class="fa fa-arrow-right"></i></a>
         </div>
-        
+
         <div class="row g-4">
-            <div class="col-6 col-md-3">
+            <div th:each="p : ${latestProducts}" class="col-6 col-md-3">
                 <div class="product-card">
                     <div class="card-img-box">
-                        <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/99486859-0ff3-46b4-949b-2d16af2ad421/custom-nike-dunk-low-by-you-su23.png" class="card-img">
-                        <a th:href="@{/details}" class="img-link"></a>
+                        <img th:src="${p.image_url != null ? p.image_url : 'https://placehold.co/400x400?text=No+Image'}"
+                            class="card-img">
+                        <a th:href="@{/details(id=${p.id})}" class="img-link"></a>
                         <div class="card-actions">
-                            <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
-                            <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
+                            <a th:href="@{/details(id=${p.id})}" class="action-btn"><i class="fa fa-eye"></i></a>
+                            <button type="button" class="action-btn"
+                                th:classappend="${globalFavIds != null && globalFavIds.contains(p.id)} ? 'active' : ''"
+                                th:onclick="'toggleWishlist(' + ${p.id} + ', this)'">
+                                <i class="fa fa-heart"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="card-info">
-                        <div class="card-cat">Nike</div>
-                        <h5 class="card-title"><a th:href="@{/details}">Dunk Low Retro</a></h5>
-                        <div class="card-price">2.990.000₫</div>
+                        <div class="card-cat" th:text="${p.brand_name}">Nike</div>
+                        <h5 class="card-title"><a th:href="@{/details(id=${p.id})}" th:text="${p.product_name}">Sản
+                                phẩm</a></h5>
+                        <div class="card-price"
+                            th:text="${p.min_price != null ? #numbers.formatDecimal(p.min_price, 0, 'POINT', 0, 'POINT') + '₫' : 'Liên hệ'}">
+                            2.990.000₫</div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="card-img-box">
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-2 rounded-0" style="z-index: 2;">HOT</span>
-                        <img src="https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/547228a4-0995-468b-980b-2268b813d11b/air-jordan-1-low-mens-shoes-kT68k6.png" class="card-img">
-                        <a th:href="@{/details}" class="img-link"></a>
-                        <div class="card-actions">
-                            <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
-                            <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
-                        </div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-cat">Jordan</div>
-                        <h5 class="card-title"><a th:href="@{/details}">Air Jordan 1 Low</a></h5>
-                        <div class="card-price">3.250.000₫</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="card-img-box">
-                        <img src="https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/7ed0855435194229a525aad6009a0497_9366/Giay_Superstar_trang_EG4958_01_standard.jpg" class="card-img">
-                        <a th:href="@{/details}" class="img-link"></a>
-                        <div class="card-actions">
-                            <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
-                            <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
-                        </div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-cat">Adidas</div>
-                        <h5 class="card-title"><a th:href="@{/details}">Superstar OG</a></h5>
-                        <div class="card-price">2.500.000₫</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-3">
-                <div class="product-card">
-                    <div class="card-img-box">
-                        <img src="https://nb.scene7.com/is/image/NB/mr530sg_nb_02_i?$pdpflexf2$&wid=440&hei=440" class="card-img">
-                        <a th:href="@{/details}" class="img-link"></a>
-                        <div class="card-actions">
-                            <a th:href="@{/details}" class="action-btn"><i class="fa fa-eye"></i></a>
-                            <a href="#" class="action-btn"><i class="fa fa-cart-plus"></i></a>
-                        </div>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-cat">New Balance</div>
-                        <h5 class="card-title"><a th:href="@{/details}">NB 530 Silver</a></h5>
-                        <div class="card-price">2.800.000₫</div>
-                    </div>
-                </div>
+            <!-- Hiển thị thông báo nếu không có sản phẩm nào -->
+            <div th:if="${#lists.isEmpty(latestProducts)}" class="text-center py-5">
+                <p class="text-muted">Chưa có sản phẩm nào được cập nhật.</p>
             </div>
         </div>
     </div>
 
     <div th:replace="~{client/fragments/footer :: footer}"></div>
-    
-    <div id="fireworks-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; background: transparent;"></div>
-    
+
+    <div id="fireworks-container"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; pointer-events: none; background: transparent;">
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.10.7/dist/index.umd.js"></script>
-    
-	<script>
-        document.addEventListener("DOMContentLoaded", function() {
-            
+
+    <script>
+        function toggleWishlist(productId, btn) {
+            $.post('/favourites/toggle', { productId: productId }, function (res) {
+                if (res.success) {
+                    if (res.status === 'added') {
+                        $(btn).addClass('active');
+                    } else {
+                        $(btn).removeClass('active');
+                    }
+                } else if (res.message === 'Chưa đăng nhập') {
+                    window.location.href = '/login';
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
             // --- PHẦN 1: CẤU HÌNH PHÁO HOA NỀN (Hạt li ti 2 bên giữ nguyên cho đẹp) ---
             const commonConfig = {
                 autoresize: true, opacity: 0.3, acceleration: 1.02, friction: 0.98, gravity: 1.2,
@@ -434,7 +683,7 @@
                 const isLeft = Math.random() < 0.5;
                 // Random vị trí trong khoảng 0-30% (trái) hoặc 70-100% (phải)
                 el.style.left = isLeft ? (Math.random() * 30 + '%') : (Math.random() * 30 + 70 + '%');
-                
+
                 // 4. Thêm vào body
                 document.body.appendChild(el);
 
@@ -458,10 +707,10 @@
                 // Dừng pháo nền
                 fwLeft.waitStop(true);
                 fwRight.waitStop(true);
-                
+
                 // Dừng bắn tia sáng
                 clearInterval(beamInterval);
-                
+
                 // Dọn dẹp hiện trường
                 setTimeout(() => {
                     document.getElementById('fw-left').remove();
@@ -469,8 +718,9 @@
                     // Xóa nốt các tia sáng còn sót lại
                     document.querySelectorAll('.light-beam').forEach(e => e.remove());
                 }, 2000);
-            }, 5000); 
+            }, 5000);
         });
     </script>
 </body>
+
 </html>

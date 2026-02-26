@@ -278,7 +278,7 @@
                         <div class="card">
                             <h3 class="card-title">THÔNG TIN CƠ BẢN</h3>
                             <div class="form-group">
-                                <label class="form-label">Tên sản phẩm</label>
+                                <label class="form-label">Tên sản phẩm *</label>
                                 <input type="text" th:field="*{productName}" class="form-control"
                                     placeholder="VD: Nike Air Force 1" required>
                             </div>
@@ -297,8 +297,8 @@
                             </div>
                             <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
                                 <div>
-                                    <label class="form-label">Kích cỡ (Size)</label>
-                                    <select name="sizeId" class="form-control">
+                                    <label class="form-label">Kích cỡ (Size) *</label>
+                                    <select name="sizeId" class="form-control" required>
                                         <option value="">-- Chọn Size --</option>
                                         <option th:each="size : ${sizes}" th:value="${size.id}"
                                             th:text="${size.sizeName}"
@@ -307,9 +307,9 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="form-label">Màu sắc (Color)</label>
+                                    <label class="form-label">Màu sắc (Color) *</label>
                                     <select name="colorId" id="colorSelect" class="form-control"
-                                        onchange="toggleNewColorInput()">
+                                        onchange="toggleNewColorInput()" required>
                                         <option value="">-- Chọn Màu --</option>
                                         <option th:each="color : ${colors}" th:value="${color.id}"
                                             th:text="${color.colorName}"
@@ -324,13 +324,15 @@
                                         placeholder="Nhập tên màu mới (VD: Xanh Rêu)">
                                 </div>
                                 <div>
-                                    <label class="form-label">Giá bán (VNĐ)</label>
+                                    <label class="form-label">Giá bán (VNĐ) *</label>
                                     <input type="number" name="price" class="form-control" placeholder="VD: 1500000"
+                                        required min="0"
                                         th:value="${product.variants != null && !product.variants.isEmpty() ? product.variants.iterator().next().price : ''}">
                                 </div>
                                 <div>
-                                    <label class="form-label">Số lượng tồn kho</label>
+                                    <label class="form-label">Số lượng tồn kho *</label>
                                     <input type="number" name="quantity" class="form-control" placeholder="VD: 100"
+                                        required min="0"
                                         th:value="${product.variants != null && !product.variants.isEmpty() ? product.variants.iterator().next().quantity : ''}">
                                 </div>
                             </div>
@@ -382,7 +384,7 @@
                             <h3 class="card-title">PHÂN LOẠI & TRẠNG THÁI</h3>
 
                             <div class="form-group">
-                                <label class="form-label">Danh mục</label>
+                                <label class="form-label">Danh mục *</label>
                                 <select name="category.id" class="form-control" required>
                                     <option value="">-- Chọn danh mục --</option>
                                     <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
@@ -392,19 +394,11 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Thương hiệu</label>
-                                <select name="brandName" class="form-control">
+                                <label class="form-label">Thương hiệu *</label>
+                                <select name="brandName" class="form-control" required>
                                     <option value="">-- Chọn thương hiệu --</option>
-                                    <option value="Nike" th:selected="${product.brandName == 'Nike'}">Nike</option>
-                                    <option value="Adidas" th:selected="${product.brandName == 'Adidas'}">Adidas
-                                    </option>
-                                    <option value="Puma" th:selected="${product.brandName == 'Puma'}">Puma</option>
-                                    <option value="New Balance" th:selected="${product.brandName == 'New Balance'}">New
-                                        Balance</option>
-                                    <option value="Vans" th:selected="${product.brandName == 'Vans'}">Vans</option>
-                                    <option value="Converse" th:selected="${product.brandName == 'Converse'}">Converse
-                                    </option>
-                                    <option value="Biti's" th:selected="${product.brandName == 'Biti''s'}">Biti's
+                                    <option th:each="b : ${brands}" th:value="${b.name}" th:text="${b.name}"
+                                        th:selected="${product.brandName == b.name}">
                                     </option>
                                 </select>
                             </div>
