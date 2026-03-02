@@ -53,15 +53,24 @@ public class OrderService {
             // Cộng điểm cho User
             jdbc.update("UPDATE accounts SET points = ISNULL(points, 0) + ? WHERE id = ?", earnedPoints, userId);
 
-            // Xét lại hạng thành viên
+            // Xét lại hạng thành viên dựa trên DB
             Integer totalPoints = jdbc.queryForObject("SELECT points FROM accounts WHERE id = ?", Integer.class,
                     userId);
             if (totalPoints != null) {
-                int newRankId = 1; // Đồng
-                if (totalPoints >= 10000)
-                    newRankId = 3; // Vàng
-                else if (totalPoints >= 5000)
-                    newRankId = 2; // Bạc
+                // Lấy danh sách hạng từ DB, sắp xếp theo điểm giảm dần
+                List<java.util.Map<String, Object>> ranks = jdbc.queryForList(
+                        "SELECT id, min_points FROM membership_ranks ORDER BY min_points DESC");
+
+                int newRankId = 1; // Default (thường là hạng thấp nhất)
+                if (!ranks.isEmpty()) {
+                    for (java.util.Map<String, Object> r : ranks) {
+                        int minPoints = ((Number) r.get("min_points")).intValue();
+                        if (totalPoints >= minPoints) {
+                            newRankId = ((Number) r.get("id")).intValue();
+                            break; // Tìm thấy hạng cao nhất thỏa mãn
+                        }
+                    }
+                }
 
                 jdbc.update("UPDATE accounts SET membership_rank_id = ? WHERE id = ?", newRankId, userId);
             }

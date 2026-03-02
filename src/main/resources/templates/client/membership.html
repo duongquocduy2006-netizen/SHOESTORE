@@ -60,37 +60,9 @@
             cursor: pointer;
         }
 
-        /* Đồng (Bronze) - Nâu */
-        .rank-bronze {
-            background: linear-gradient(135deg, #804a00 0%, #b08d57 50%, #804a00 100%);
-            box-shadow: 0 20px 50px rgba(128, 74, 0, 0.3);
-            color: #fff !important;
-        }
-
-        .rank-bronze * {
-            color: #fff !important;
-        }
-
-        /* Bạc (Silver) - Xám */
-        .rank-silver {
-            background: linear-gradient(135deg, #757575 0%, #e0e0e0 50%, #757575 100%);
-            box-shadow: 0 20px 50px rgba(117, 117, 117, 0.3);
-            color: #000 !important;
-        }
-
-        .rank-silver * {
-            color: #000 !important;
-        }
-
-        /* Vàng (Gold) - Vàng */
-        .rank-gold {
-            background: linear-gradient(135deg, #b48811 0%, #fbd868 50%, #b48811 100%);
-            box-shadow: 0 20px 50px rgba(251, 191, 36, 0.3);
-            color: #000 !important;
-        }
-
-        .rank-gold * {
-            color: #000 !important;
+        /* Thẻ VIP - Màu sắc được tải động từ Database */
+        .vip-card * {
+            font-family: 'Oswald', sans-serif;
         }
 
         .vip-card * {
@@ -323,7 +295,8 @@
 
     <div class="member-hero">
         <div class="vip-card" id="tiltCard"
-            th:classappend="${account.membership_rank_id == 1 ? 'rank-bronze' : (account.membership_rank_id == 2 ? 'rank-silver' : 'rank-gold')}">
+            th:style="'background: linear-gradient(135deg, ' + ${account.color_code ?: '#804a00'} + ' 0%, #fff 50%, ' + ${account.color_code ?: '#804a00'} + ' 100%);' + 
+                      'box-shadow: 0 20px 50px ' + ${account.color_code ?: '#804a00'} + '4D; border-color: ' + (${account.color_code} == '#FFFFFF' ? '#000' : 'rgba(255,255,255,0.4)') + '; color: #000;'">
             <div class="d-flex justify-content-between">
                 <div class="card-chip"></div>
                 <i class="fa-solid fa-wifi" style="font-size: 24px; opacity: 0.5;"></i>

@@ -26,7 +26,7 @@ public class MembershipController {
 
         try {
             // Fetch fresh data from DB to get latest points and rank
-            String sql = "SELECT a.*, mr.rank_name FROM accounts a " +
+            String sql = "SELECT a.*, mr.rank_name, mr.color_code FROM accounts a " +
                     "LEFT JOIN membership_ranks mr ON a.membership_rank_id = mr.id " +
                     "WHERE a.id = ?";
             Map<String, Object> fullAccount = jdbc.queryForMap(sql, account.get("id"));
