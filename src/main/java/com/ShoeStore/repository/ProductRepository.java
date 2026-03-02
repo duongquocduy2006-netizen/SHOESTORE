@@ -12,9 +12,15 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
-    @EntityGraph(attributePaths = {"category", "variants", "images"})
+    @EntityGraph(attributePaths = { "category", "variants", "images" })
     List<Product> findAll();
-    
+
+    @Query("SELECT COUNT(p) > 0 FROM Product p WHERE p.category.id = ?1")
+    boolean existsByCategoryId(Integer categoryId);
+
+    @Query("SELECT COUNT(p) > 0 FROM Product p WHERE p.brandName = ?1")
+    boolean existsByBrandName(String brandName);
+
     // 1. Xóa trong Giỏ hàng (Cấp 1)
     @Modifying
     @Transactional
@@ -38,17 +44,16 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Transactional
     @Query(value = "DELETE FROM product_variants WHERE product_id = ?1", nativeQuery = true)
     void deleteRelatedVariants(Integer productId);
-    
+
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM product_reviews WHERE product_id = ?1", nativeQuery = true)
     void deleteRelatedReviews(Integer productId);
 
- // 5. Xóa Yêu thích (Cấp 1)
+    // 5. Xóa Yêu thích (Cấp 1)
     @Modifying
     @Transactional
     @Query(value = "DELETE FROM favourites WHERE product_id = ?1", nativeQuery = true)
     void deleteRelatedFavourites(Integer productId);
-
 
 }

@@ -26,6 +26,7 @@ import com.ShoeStore.repository.SizeRepository;
 import com.ShoeStore.repository.ColorRepository;
 import com.ShoeStore.repository.ProductImageRepository;
 import com.ShoeStore.repository.ProductVariantRepository;
+import com.ShoeStore.repository.BrandRepository;
 import com.ShoeStore.model.Size;
 import com.ShoeStore.model.Color;
 import com.ShoeStore.model.ProductImage;
@@ -54,6 +55,9 @@ public class AdminProductManager {
 
     @Autowired
     private ProductVariantRepository productVariantRepository;
+
+    @Autowired
+    private BrandRepository brandRepository;
 
     private void seedData() {
         if (colorRepository.findAll().isEmpty()) {
@@ -93,6 +97,7 @@ public class AdminProductManager {
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("sizes", sizeRepository.findAll());
         model.addAttribute("colors", colorRepository.findAll());
+        model.addAttribute("brands", brandRepository.findAll());
         return "admin/product-form";
     }
 
@@ -213,6 +218,7 @@ public class AdminProductManager {
         model.addAttribute("categories", categoryRepository.findAll()); // Thêm dòng này
         model.addAttribute("sizes", sizeRepository.findAll());
         model.addAttribute("colors", colorRepository.findAll());
+        model.addAttribute("brands", brandRepository.findAll());
         return "admin/product-form";
     }
 

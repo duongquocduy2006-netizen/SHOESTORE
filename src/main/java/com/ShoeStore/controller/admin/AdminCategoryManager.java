@@ -15,11 +15,14 @@ import com.ShoeStore.repository.CategoryRepository;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/categories") 
+@RequestMapping("/admin/categories")
 public class AdminCategoryManager {
-	
+
     @Autowired
     private CategoryRepository categoryRepo;
+
+    @Autowired
+    private com.ShoeStore.repository.ProductRepository productRepo;
 
     // 1. HIỂN THỊ DANH SÁCH TỪ DATABASE
     @GetMapping
@@ -27,23 +30,24 @@ public class AdminCategoryManager {
         // Lấy toàn bộ danh mục từ bảng categories trong DB
         List<Category> categories = categoryRepo.findAll();
         model.addAttribute("list", categories);
-        return "admin/categories"; 
+        return "admin/categories";
     }
 
     // 2. HIỂN THỊ FORM THÊM MỚI
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("category", new Category());
-        return "admin/add-categories"; 
+        return "admin/add-categories";
     }
 
     // 3. LƯU DANH MỤC MỚI VÀO DATABASE
     @PostMapping("/add")
     public String saveAdd(@ModelAttribute("category") Category category, Model model) {
-        // JPA sẽ tự động phát sinh ID (do đã cài @GeneratedValue trong Entity) và lưu vào DB
+        // JPA sẽ tự động phát sinh ID (do đã cài @GeneratedValue trong Entity) và lưu
+        // vào DB
         categoryRepo.save(category);
         model.addAttribute("message", "Thêm danh mục mới thành công!");
-        
+
         // Reset lại form trống sau khi thêm thành công
         model.addAttribute("category", new Category());
         return "admin/add-categories";
@@ -54,7 +58,7 @@ public class AdminCategoryManager {
     public String editForm(@PathVariable("id") Integer id, Model model) {
         // Tìm danh mục trong DB theo ID
         Category category = categoryRepo.findById(id).orElse(null);
-        
+
         if (category != null) {
             model.addAttribute("category", category);
             return "admin/edit-categories";
@@ -65,20 +69,27 @@ public class AdminCategoryManager {
 
     // 5. CẬP NHẬT DỮ LIỆU VÀO DATABASE
     @PostMapping("/edit/{id}")
-    public String saveUpdate(@PathVariable("id") Integer id, @ModelAttribute("category") Category category, Model model) {
-        // Đảm bảo ID được giữ nguyên để JPA hiểu là "Cập nhật" chứ không phải "Thêm mới"
+    public String saveUpdate(@PathVariable("id") Integer id, @ModelAttribute("category") Category category,
+            Model model) {
+        // Đảm bảo ID được giữ nguyên để JPA hiểu là "Cập nhật" chứ không phải "Thêm
+        // mới"
         category.setId(id);
         categoryRepo.save(category);
-        
+
         model.addAttribute("message", "Cập nhật danh mục thành công!");
         return "admin/edit-categories";
     }
 
     // 6. XÓA DANH MỤC KHỎI DATABASE
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable("id") Integer id) {
-        // Xóa thẳng dòng có ID tương ứng trong CSDL
-        categoryRepo.deleteById(id);
+    public String delete(@PathVariable("id") Integer id,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
+        if (productRepo.existsByCategoryId(id)) {
+            ra.addFlashAttribute("error", "Không thể xóa danh mục này vì vẫn còn sản phẩm đang thuộc danh mục này!");
+        } else {
+            categoryRepo.deleteById(id);
+            ra.addFlashAttribute("message", "Xóa danh mục thành công!");
+        }
         return "redirect:/admin/categories";
     }
 }
