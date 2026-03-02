@@ -114,9 +114,11 @@ public class OrderService {
             throw new RuntimeException("Chỉ có thể xác nhận khi đơn hàng đang ở trạng thái 'Đang giao'.");
         }
 
-        // 2. Chuyển sang trạng thái Đã nhận hàng - Chờ duyệt (5)
-        // Lưu ý: Chưa cộng điểm ở bước này. Admin sẽ duyệt sang 3 mới cộng điểm.
-        updateOrderStatus(orderCode, 5);
+        // 2. Chuyển sang trạng thái Hoàn tất (3) ngay lập tức
+        // Khi khách hàng nhấn "Đã nhận được hàng", đơn hàng được coi là thành công.
+        // Hệ thống sẽ tự động cộng điểm và cập nhật hạng thành viên trong hàm
+        // updateOrderStatus.
+        updateOrderStatus(orderCode, 3);
     }
 
     public int getOrderStatus(String orderCode) {
