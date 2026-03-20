@@ -5,11 +5,16 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import com.ShoeStore.model.LoginRequest;
+import com.ShoeStore.model.RegisterRequest;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import java.util.Map;
 
 @Controller
@@ -20,22 +25,31 @@ public class AuthController {
 
     // ----- GET: Hiển thị giao diện -----
     @GetMapping("/login")
-    public String login() {
+    public String login(Model model) {
+        model.addAttribute("loginRequest", new LoginRequest());
         return "login";
     }
 
     @GetMapping("/register")
-    public String register() {
+    public String register(Model model) {
+        model.addAttribute("registerRequest", new RegisterRequest());
         return "register";
     }
 
     // ----- POST: Xử lý Đăng Nhập -----
     @PostMapping("/login")
     public String processLogin(
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
+            @Valid @ModelAttribute("loginRequest") LoginRequest loginRequest,
+            BindingResult result,
             HttpSession session,
             Model model) {
+
+        if (result.hasErrors()) {
+            return "login";
+        }
+
+        String email = loginRequest.getEmail();
+        String password = loginRequest.getPassword();
 
         Map<String, Object> account = null;
         try {
@@ -44,7 +58,7 @@ public class AuthController {
             account = jdbc.queryForMap(sql, email);
         } catch (EmptyResultDataAccessException e) {
             // Không tìm thấy Email trong database
-            model.addAttribute("error", "Email này chưa được đăng ký!");
+            result.rejectValue("email", "error.email", "Email này chưa được đăng ký!");
             return "login";
         } catch (Exception e) {
             // Lỗi hệ thống khác khi query
@@ -59,7 +73,7 @@ public class AuthController {
             // Kiểm tra xem tài khoản có bị khóa không (status = 0)
             int status = (Integer) account.get("status");
             if (status == 0) {
-                model.addAttribute("error", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ!");
+                result.rejectValue("email", "error.email", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ hỗ trợ!");
                 return "login";
             }
 
@@ -73,7 +87,7 @@ public class AuthController {
             }
             return "redirect:/"; // Nếu là USER (hoặc null) về trang chủ
         } else {
-            model.addAttribute("error", "Mật khẩu không chính xác!");
+            result.rejectValue("password", "error.password", "Mật khẩu không chính xác!");
             return "login";
         }
     }
@@ -81,15 +95,22 @@ public class AuthController {
     // ----- POST: Xử lý Đăng Ký -----
     @PostMapping("/register")
     public String processRegister(
-            @RequestParam("fullName") String fullName,
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            @RequestParam("confirmPassword") String confirmPassword,
+            @Valid @ModelAttribute("registerRequest") RegisterRequest registerRequest,
+            BindingResult result,
             Model model) {
+
+        if (result.hasErrors()) {
+            return "register";
+        }
+
+        String email = registerRequest.getEmail();
+        String password = registerRequest.getPassword();
+        String fullName = registerRequest.getFullName();
+        String confirmPassword = registerRequest.getConfirmPassword();
 
         // 1. Kiểm tra 2 mật khẩu
         if (!password.equals(confirmPassword)) {
-            model.addAttribute("error", "Mật khẩu nhập lại không khớp!");
+            result.rejectValue("confirmPassword", "error.confirmPassword", "Mật khẩu nhập lại không khớp!");
             return "register";
         }
 
@@ -98,7 +119,7 @@ public class AuthController {
         Integer count = jdbc.queryForObject(checkEmailSql, Integer.class, email);
 
         if (count != null && count > 0) {
-            model.addAttribute("error", "Địa chỉ Email này đã được sử dụng!");
+            result.rejectValue("email", "error.email", "Địa chỉ Email này đã được sử dụng!");
             return "register";
         }
 

@@ -322,21 +322,26 @@
                     0 PTS
                 </span>
             </div>
-            <div class="progress-track">
+            <div class="progress-track" th:with="
+                nextRank=${currentRankIdx < allRanks.size() - 1 ? allRanks[currentRankIdx + 1] : null},
+                currentMin=${allRanks[currentRankIdx].min_points},
+                nextMin=${nextRank != null ? nextRank.min_points : 1000000},
+                progressPercent=${nextRank == null ? 100 : ( (account.points - currentMin) * 100 / (nextMin - currentMin) )}
+            ">
                 <div class="progress-fill"
-                    th:style="'width: ' + (${account.membership_rank_id == 1} ? (${(account.points ?: 0) * 100 / 5000} + '%') : (${account.membership_rank_id == 2} ? (${((account.points ?: 0) - 5000) * 100 / 5000} + '%') : '100%'))">
+                    th:style="'width: ' + ${progressPercent > 100 ? 100 : (progressPercent < 0 ? 0 : progressPercent)} + '%'">
                 </div>
             </div>
-            <div class="d-flex justify-content-between" style="font-size: 12px; color: #ccc;">
+            <div class="d-flex justify-content-between" style="font-size: 12px; color: #ccc;" th:with="
+                nextRank=${currentRankIdx < allRanks.size() - 1 ? allRanks[currentRankIdx + 1] : null}
+            ">
                 <span><i class="fa-solid fa-medal text-warning me-1"></i> <span
                         th:text="'Hạng ' + ${account.rank_name ?: 'Đồng'}">Hạng Vàng</span></span>
-                <span th:if="${account.membership_rank_id == 1}"
-                    th:text="'Tiếp theo: Bạc (' + ${#numbers.formatDecimal(5000 - (account.points ?: 0), 0, 'POINT', 0, 'POINT')} + ' pts)'">Tiếp
-                    theo: Bạc (5,000 pts)</span>
-                <span th:if="${account.membership_rank_id == 2}"
-                    th:text="'Tiếp theo: Vàng (' + ${#numbers.formatDecimal(10000 - (account.points ?: 0), 0, 'POINT', 0, 'POINT')} + ' pts)'">Tiếp
-                    theo: Vàng (5,000 pts)</span>
-                <span th:if="${account.membership_rank_id == 3}">Hạng cao nhất</span>
+
+                <span th:if="${nextRank != null}"
+                    th:text="'Tiếp theo: ' + ${nextRank.rank_name} + ' (' + ${#numbers.formatDecimal(T(java.lang.Math).max(0, nextRank.min_points - account.points), 0, 'POINT', 0, 'POINT')} + ' pts)'">
+                </span>
+                <span th:if="${nextRank == null}">Hạng cao nhất</span>
             </div>
         </div>
     </div>

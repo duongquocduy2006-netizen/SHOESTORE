@@ -250,12 +250,19 @@
                 <span th:text="${error}">Thông báo lỗi</span>
             </div>
 
-            <div class="toolbar">
+            <form th:action="@{/admin/brands}" method="get" class="toolbar">
                 <div class="search-box">
                     <i class="bi bi-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Tìm kiếm thương hiệu...">
+                    <input type="text" name="keyword" th:value="${keyword}" class="search-input"
+                        placeholder="Tìm kiếm thương hiệu...">
                 </div>
-            </div>
+                <select name="status" class="search-input" style="width: 200px; flex-grow: 0;">
+                    <option value="" th:selected="${status == null or status == ''}">Trạng thái: Tất cả</option>
+                    <option value="active" th:selected="${status == 'active'}">Đang hoạt động</option>
+                    <option value="inactive" th:selected="${status == 'inactive'}">Đang ẩn</option>
+                </select>
+                <button type="submit" class="btn-neon" style="padding: 12px 20px; font-size: 13px;">LỌC</button>
+            </form>
 
             <div class="table-card">
                 <table>

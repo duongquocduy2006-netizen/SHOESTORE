@@ -1,6 +1,8 @@
 package com.ShoeStore.controller.admin;
 
+import com.ShoeStore.model.CustomerDTO;
 import com.ShoeStore.service.CustomerService;
+import com.ShoeStore.service.OrderService;
 import com.ShoeStore.repository.MembershipRankRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,6 +17,9 @@ public class AdminCustomerManager {
 
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private MembershipRankRepository rankRepo;
@@ -33,6 +38,27 @@ public class AdminCustomerManager {
             RedirectAttributes ra) {
         customerService.updateCustomerRank(userId, rankId);
         ra.addFlashAttribute("message", "Cập nhật hạng khách hàng thành công!");
+        return "redirect:/admin/customers";
+    }
+
+    @GetMapping("/admin/customers/detail")
+    public String viewCustomerDetail(@RequestParam("id") Integer id, Model model) {
+        CustomerDTO customer = customerService.getCustomerById(id);
+        if (customer == null) {
+            return "redirect:/admin/customers";
+        }
+        model.addAttribute("customer", customer);
+        model.addAttribute("orders", orderService.getOrdersByUserId(id.longValue()));
+        return "admin/customer-detail";
+    }
+
+    @PostMapping("/admin/customers/toggle-status")
+    public String toggleStatus(@RequestParam("id") Integer id,
+            @RequestParam("status") Integer status,
+            RedirectAttributes ra) {
+        customerService.updateCustomerStatus(id, status);
+        String msg = (status == 1) ? "Đã mở khóa tài khoản!" : "Đã khóa tài khoản thành công!";
+        ra.addFlashAttribute("message", msg);
         return "redirect:/admin/customers";
     }
 }

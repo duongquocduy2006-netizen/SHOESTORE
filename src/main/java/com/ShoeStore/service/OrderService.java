@@ -14,15 +14,30 @@ public class OrderService {
     @Autowired
     private JdbcTemplate jdbc;
 
-    public List<OrderDTO> getAllOrders() {
-        // Query kết nối 3 bảng để lấy thông tin chi tiết đơn hàng
-        String sql = "SELECT o.order_code, a.receiving_name, o.created_at, o.final_amount, o.status, pm.method_name " +
-                "FROM orders o " +
-                "LEFT JOIN addresses a ON o.receiver_address_id = a.id " +
-                "LEFT JOIN payment_methods pm ON o.payment_method_id = pm.id " +
-                "ORDER BY o.created_at DESC";
+    public List<OrderDTO> getAllOrders(String keyword, Integer status) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT o.order_code, a.receiving_name, o.created_at, o.final_amount, o.status, pm.method_name " +
+                        "FROM orders o " +
+                        "LEFT JOIN addresses a ON o.receiver_address_id = a.id " +
+                        "LEFT JOIN payment_methods pm ON o.payment_method_id = pm.id " +
+                        "WHERE 1=1 ");
 
-        return jdbc.query(sql, (rs, rowNum) -> {
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (o.order_code LIKE ? OR a.receiving_name LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+
+        if (status != null) {
+            sql.append("AND o.status = ? ");
+            params.add(status);
+        }
+
+        sql.append("ORDER BY o.created_at DESC");
+
+        return jdbc.query(sql.toString(), (rs, rowNum) -> {
             OrderDTO dto = new OrderDTO();
             dto.setOrderCode(rs.getString("order_code"));
             dto.setCustomerName(rs.getString("receiving_name"));
@@ -31,7 +46,7 @@ public class OrderService {
             dto.setStatus(rs.getInt("status"));
             dto.setPaymentMethod(rs.getString("method_name"));
             return dto;
-        });
+        }, params.toArray());
     }
 
     public void updateOrderStatus(String orderCode, int newStatus) {
@@ -53,27 +68,55 @@ public class OrderService {
             // Cộng điểm cho User
             jdbc.update("UPDATE accounts SET points = ISNULL(points, 0) + ? WHERE id = ?", earnedPoints, userId);
 
-            // Xét lại hạng thành viên dựa trên DB
-            Integer totalPoints = jdbc.queryForObject("SELECT points FROM accounts WHERE id = ?", Integer.class,
-                    userId);
-            if (totalPoints != null) {
-                // Lấy danh sách hạng từ DB, sắp xếp theo điểm giảm dần
-                List<java.util.Map<String, Object>> ranks = jdbc.queryForList(
-                        "SELECT id, min_points FROM membership_ranks ORDER BY min_points DESC");
+            // Xét lại hạng thành viên
+            updateUserRank(userId);
 
-                int newRankId = 1; // Default (thường là hạng thấp nhất)
-                if (!ranks.isEmpty()) {
-                    for (java.util.Map<String, Object> r : ranks) {
-                        int minPoints = ((Number) r.get("min_points")).intValue();
-                        if (totalPoints >= minPoints) {
-                            newRankId = ((Number) r.get("id")).intValue();
-                            break; // Tìm thấy hạng cao nhất thỏa mãn
-                        }
+            // Trừ tồn kho sản phẩm
+            updateInventory(orderCode);
+        }
+    }
+
+    public void updateInventory(String orderCode) {
+        // 1. Lấy danh sách sản phẩm (biến thể) và số lượng từ đơn hàng
+        String sqlItems = "SELECT oi.product_variant_id, oi.quantity " +
+                "FROM order_items oi " +
+                "JOIN orders o ON oi.order_id = o.id " +
+                "WHERE o.order_code = ?";
+        List<java.util.Map<String, Object>> items = jdbc.queryForList(sqlItems, orderCode);
+
+        // 2. Trừ số lượng trong kho của từng biến thể
+        for (java.util.Map<String, Object> item : items) {
+            Integer variantId = ((Number) item.get("product_variant_id")).intValue();
+            Integer quantity = ((Number) item.get("quantity")).intValue();
+
+            // Trừ tồn kho: Đảm bảo không bị âm, nếu kho thiếu thì về 0
+            jdbc.update(
+                    "UPDATE product_variants SET quantity = CASE WHEN quantity >= ? THEN quantity - ? ELSE 0 END WHERE id = ?",
+                    quantity, quantity, variantId);
+        }
+    }
+
+    public void updateUserRank(Long userId) {
+        // Xét lại hạng thành viên dựa trên DB
+        Integer totalPoints = jdbc.queryForObject("SELECT points FROM accounts WHERE id = ?", Integer.class,
+                userId);
+        if (totalPoints != null) {
+            // Lấy danh sách hạng từ DB, sắp xếp theo điểm giảm dần
+            List<java.util.Map<String, Object>> ranks = jdbc.queryForList(
+                    "SELECT id, min_points FROM membership_ranks ORDER BY min_points DESC");
+
+            int newRankId = 1; // Default
+            if (!ranks.isEmpty()) {
+                for (java.util.Map<String, Object> r : ranks) {
+                    int minPoints = ((Number) r.get("min_points")).intValue();
+                    if (totalPoints >= minPoints) {
+                        newRankId = ((Number) r.get("id")).intValue();
+                        break; // Tìm thấy hạng cao nhất thỏa mãn
                     }
                 }
-
-                jdbc.update("UPDATE accounts SET membership_rank_id = ? WHERE id = ?", newRankId, userId);
             }
+
+            jdbc.update("UPDATE accounts SET membership_rank_id = ? WHERE id = ?", newRankId, userId);
         }
     }
 

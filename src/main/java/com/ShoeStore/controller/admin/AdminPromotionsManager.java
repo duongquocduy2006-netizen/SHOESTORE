@@ -1,13 +1,74 @@
 package com.ShoeStore.controller.admin;
 
-import org.springframework.web.bind.annotation.GetMapping;
+import com.ShoeStore.model.MembershipRank;
+import com.ShoeStore.model.Voucher;
+import com.ShoeStore.repository.MembershipRankRepository;
+import com.ShoeStore.service.VoucherService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Controller
+@RequestMapping("/admin/promotions")
 public class AdminPromotionsManager {
-	@GetMapping("/admin/promotions")
-	public String dashBoard() {
+
+	@Autowired
+	private VoucherService voucherService;
+
+	@Autowired
+	private MembershipRankRepository rankRepo;
+
+	@GetMapping
+	public String index(Model model) {
+		model.addAttribute("list", voucherService.getAllVouchers());
+		model.addAttribute("ranks", rankRepo.findAll());
 		return "admin/promotions";
 	}
 
+	@PostMapping("/save")
+	public String saveVoucher(
+			@ModelAttribute Voucher voucher,
+			@RequestParam(value = "rankIds", required = false) List<Integer> rankIds,
+			@RequestParam(value = "startDateStr", required = false) String startDateStr,
+			@RequestParam(value = "endDateStr", required = false) String endDateStr,
+			RedirectAttributes ra) {
+
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+			if (startDateStr != null && !startDateStr.isEmpty()) {
+				voucher.setStartDate(sdf.parse(startDateStr));
+			}
+			if (endDateStr != null && !endDateStr.isEmpty()) {
+				voucher.setEndDate(sdf.parse(endDateStr));
+			}
+
+			if (rankIds != null) {
+				Set<MembershipRank> ranks = new HashSet<>(rankRepo.findAllById(rankIds));
+				voucher.setApplicableRanks(ranks);
+			} else {
+				voucher.setApplicableRanks(new HashSet<>());
+			}
+
+			voucherService.saveVoucher(voucher);
+			ra.addFlashAttribute("message", "Lưu voucher thành công!");
+		} catch (Exception e) {
+			ra.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+		}
+		return "redirect:/admin/promotions";
+	}
+
+	@GetMapping("/delete/{id}")
+	public String delete(@PathVariable("id") Integer id, RedirectAttributes ra) {
+		voucherService.deleteVoucher(id);
+		ra.addFlashAttribute("message", "Xóa voucher thành công!");
+		return "redirect:/admin/promotions";
+	}
 }

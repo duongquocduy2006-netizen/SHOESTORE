@@ -16,9 +16,9 @@ public class DashboardService {
     @Autowired
     private JdbcTemplate jdbc;
 
-    // 1. Tổng doanh thu (Đơn hàng status = 1)
+    // 1. Tổng doanh thu (Đơn hàng status = 3 là thành công)
     public Double getTotalRevenue() {
-        String sql = "SELECT SUM(final_amount) FROM orders WHERE status = 1";
+        String sql = "SELECT SUM(final_amount) FROM orders WHERE status = 3";
         Double total = jdbc.queryForObject(sql, Double.class);
         return total != null ? total : 0.0;
     }
@@ -48,7 +48,8 @@ public class DashboardService {
     public List<TopProduct> getTopProducts() {
         String sql = "SELECT TOP 4 " +
                 "p.id, p.product_name, p.product_code, " +
-                "(SELECT TOP 1 image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1) as image_url, " +
+                "(SELECT TOP 1 image_url FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1) as image_url, "
+                +
                 "c.category_name, " +
                 "SUM(oi.quantity) as soldCount, " +
                 "SUM(oi.quantity * oi.price) as totalRevenue " +
@@ -57,7 +58,7 @@ public class DashboardService {
                 "JOIN product_variants pv ON pv.product_id = p.id " +
                 "JOIN order_items oi ON oi.product_variant_id = pv.id " +
                 "JOIN orders o ON oi.order_id = o.id " +
-                "WHERE o.status = 1 " +
+                "WHERE o.status = 3 " +
                 "GROUP BY p.id, p.product_name, p.product_code, c.category_name " +
                 "ORDER BY soldCount DESC";
 
@@ -66,7 +67,8 @@ public class DashboardService {
             dto.setId(rs.getInt("id"));
             dto.setName(rs.getString("product_name"));
             dto.setSku(rs.getString("product_code"));
-            dto.setImage(rs.getString("image_url") != null ? "/images/" + rs.getString("image_url") : "https://via.placeholder.com/40");
+            dto.setImage(rs.getString("image_url") != null ? "/images/" + rs.getString("image_url")
+                    : "https://via.placeholder.com/40");
             dto.setCategory(rs.getString("category_name"));
             dto.setSoldCount(rs.getInt("soldCount"));
             dto.setTotalRevenue(rs.getDouble("totalRevenue"));
@@ -90,9 +92,12 @@ public class DashboardService {
     // 7. Hoạt động gần đây (Map vào Activity của Xếp)
     public List<Activity> getRecentActivities() {
         List<Activity> activities = new ArrayList<>();
-        activities.add(new Activity("success", "<strong class='text-white'>Nguyễn Văn A</strong> vừa đặt đơn hàng #O001", "2 phút trước"));
-        activities.add(new Activity("warning", "Cảnh báo: <strong class='text-white'>Nike Air</strong> sắp hết hàng.", "15 phút trước"));
-        activities.add(new Activity("info", "<strong class='text-white'>Trần Thị Bích</strong> đã đăng ký thành viên.", "1 giờ trước"));
+        activities.add(new Activity("success",
+                "<strong class='text-white'>Nguyễn Văn A</strong> vừa đặt đơn hàng #O001", "2 phút trước"));
+        activities.add(new Activity("warning", "Cảnh báo: <strong class='text-white'>Nike Air</strong> sắp hết hàng.",
+                "15 phút trước"));
+        activities.add(new Activity("info", "<strong class='text-white'>Trần Thị Bích</strong> đã đăng ký thành viên.",
+                "1 giờ trước"));
         return activities;
     }
 }

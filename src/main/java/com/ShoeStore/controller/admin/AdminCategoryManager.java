@@ -3,11 +3,7 @@ package com.ShoeStore.controller.admin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import com.ShoeStore.model.Category;
 import com.ShoeStore.repository.CategoryRepository;
@@ -26,10 +22,25 @@ public class AdminCategoryManager {
 
     // 1. HIỂN THỊ DANH SÁCH TỪ DATABASE
     @GetMapping
-    public String index(Model model) {
-        // Lấy toàn bộ danh mục từ bảng categories trong DB
-        List<Category> categories = categoryRepo.findAll();
+    public String index(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
+
+        Boolean active = null;
+        if ("active".equals(status)) {
+            active = true;
+        } else if ("inactive".equals(status)) {
+            active = false;
+        }
+
+        String searchKeyword = (keyword != null) ? keyword : "";
+
+        List<Category> categories = categoryRepo.searchCategories(searchKeyword, active);
+
         model.addAttribute("list", categories);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         return "admin/categories";
     }
 

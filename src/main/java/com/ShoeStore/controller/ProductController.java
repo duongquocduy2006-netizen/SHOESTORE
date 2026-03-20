@@ -40,7 +40,9 @@ public class ProductController {
                         "(SELECT MIN(price) FROM product_variants WHERE product_id = p.id) as min_price " +
                         "FROM products p " +
                         "LEFT JOIN categories c ON p.category_id = c.id " +
-                        "WHERE p.status = 1 ");
+                        "WHERE p.status = 1 AND c.status = 1 " +
+                        "AND EXISTS (SELECT 1 FROM brands b WHERE b.brand_name = p.brand_name AND b.status = 1) " +
+                        "AND EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = p.id AND pv.quantity > 0) ");
 
         // --- FILTER LOGIC ---
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -110,12 +112,12 @@ public class ProductController {
     }
 
     @GetMapping("/details")
-    public String viewProductDetails(@RequestParam("id") Integer id, Model model) {
+    public String viewProductDetails(@RequestParam("id") Integer id, Model model, HttpSession session) {
         try {
             // 1. Thông tin cơ bản sản phẩm
             String sqlInfo = "SELECT p.*, c.category_name FROM products p " +
                     "LEFT JOIN categories c ON p.category_id = c.id " +
-                    "WHERE p.id = ?";
+                    "WHERE p.id = ? AND c.status = 1 AND EXISTS (SELECT 1 FROM brands b WHERE b.brand_name = p.brand_name AND b.status = 1)";
             Map<String, Object> product = jdbc.queryForMap(sqlInfo, id);
             System.out.println("DEBUG Product: " + product);
             model.addAttribute("p", product);
@@ -142,10 +144,39 @@ public class ProductController {
                     + "(SELECT MIN(price) FROM product_variants WHERE product_id = p.id) as min_price " +
                     "FROM products p " +
                     "LEFT JOIN categories c ON p.category_id = c.id " +
-                    "WHERE p.category_id = ? AND p.id <> ? AND p.status = 1";
+                    "WHERE p.category_id = ? AND p.id <> ? AND p.status = 1 AND c.status = 1 " +
+                    "AND EXISTS (SELECT 1 FROM brands b WHERE b.brand_name = p.brand_name AND b.status = 1) " +
+                    "AND EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = p.id AND pv.quantity > 0)";
 
             List<Map<String, Object>> relatedProducts = jdbc.queryForList(sqlRelated, categoryId, id);
             model.addAttribute("relatedProducts", relatedProducts);
+
+            // 5. Lấy danh sách Voucher khả dụng
+            @SuppressWarnings("unchecked")
+            Map<String, Object> account = (Map<String, Object>) session.getAttribute("account");
+            Integer userRankId = (account != null) ? (Integer) account.get("membership_rank_id") : null;
+
+            String sqlVouchers = "SELECT DISTINCT v.* FROM vouchers v " +
+                    "LEFT JOIN voucher_membership_ranks vr ON v.id = vr.voucher_id " +
+                    "WHERE v.status = 1 AND v.quantity > 0 " +
+                    "AND (v.end_date IS NULL OR v.end_date > GETDATE()) " +
+                    "AND (v.start_date IS NULL OR v.start_date <= GETDATE())";
+
+            List<Map<String, Object>> vouchers = jdbc.queryForList(sqlVouchers);
+            // Nếu có rank, lọc ra những voucher cho phép rank đó HOẶC voucher cho tất cả
+            // rank (không có trong voucher_membership_ranks)
+            if (userRankId != null) {
+                String sqlRankVouchers = sqlVouchers
+                        + " AND (NOT EXISTS (SELECT 1 FROM voucher_membership_ranks vr2 WHERE vr2.voucher_id = v.id) " +
+                        " OR EXISTS (SELECT 1 FROM voucher_membership_ranks vr3 WHERE vr3.voucher_id = v.id AND vr3.rank_id = ?))";
+                vouchers = jdbc.queryForList(sqlRankVouchers, userRankId);
+            } else {
+                // Nếu chưa đăng nhập, chỉ hiện voucher cho tất cả các hạng
+                String sqlPublicVouchers = sqlVouchers
+                        + " AND NOT EXISTS (SELECT 1 FROM voucher_membership_ranks vr2 WHERE vr2.voucher_id = v.id)";
+                vouchers = jdbc.queryForList(sqlPublicVouchers);
+            }
+            model.addAttribute("vouchers", vouchers);
 
             return "client/details";
         } catch (Exception e) {
@@ -167,8 +198,10 @@ public class ProductController {
                 + "(SELECT MIN(price) FROM product_variants WHERE product_id = p.id) as min_price " +
                 "FROM products p " +
                 "LEFT JOIN categories c ON p.category_id = c.id " +
-                "WHERE p.status = 1 " +
+                "WHERE p.status = 1 AND c.status = 1 " +
+                "AND EXISTS (SELECT 1 FROM brands b WHERE b.brand_name = p.brand_name AND b.status = 1) " +
                 "AND p.created_at >= DATEADD(day, -3, GETDATE()) " +
+                "AND EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = p.id AND pv.quantity > 0) " +
                 "ORDER BY p.created_at DESC";
 
         List<Map<String, Object>> newProducts = jdbc.queryForList(sql);

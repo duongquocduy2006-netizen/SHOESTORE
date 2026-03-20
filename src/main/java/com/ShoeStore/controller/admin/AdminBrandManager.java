@@ -21,9 +21,25 @@ public class AdminBrandManager {
     private ProductRepository productRepo;
 
     @GetMapping
-    public String index(Model model) {
-        List<Brand> brands = brandRepo.findAll();
+    public String index(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
+
+        Boolean active = null;
+        if ("active".equals(status)) {
+            active = true;
+        } else if ("inactive".equals(status)) {
+            active = false;
+        }
+
+        String searchKeyword = (keyword != null) ? keyword : "";
+
+        List<Brand> brands = brandRepo.searchBrands(searchKeyword, active);
+
         model.addAttribute("list", brands);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
         return "admin/brands";
     }
 

@@ -231,6 +231,7 @@
                                     <th>Màu sắc</th>
                                     <th>Giá bán</th>
                                     <th>Kho hàng</th>
+                                    <th style="text-align: right;">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -241,6 +242,14 @@
                                         th:text="${#numbers.formatDecimal(v.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
                                         1.500.000 ₫</td>
                                     <td th:text="${v.quantity}">100</td>
+                                    <td style="text-align: right;">
+                                        <a th:href="@{'/admin/products/variant/delete/' + ${v.id} + '/' + ${product.id}}"
+                                            style="color: var(--accent-red); font-size: 16px; margin-left: 10px;"
+                                            title="Xóa biến thể này"
+                                            onclick="return confirm('Bạn có chắc chắn muốn xóa biến thể này không? Lưu ý: Nếu biến thể đã có trong giỏ hàng/đơn hàng, việc xóa có thể bị lỗi.');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                                 <tr th:if="${product.variants == null || product.variants.isEmpty()}">
                                     <td colspan="4" style="text-align: center; color: #888; padding: 30px;">Chưa có biến

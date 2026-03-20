@@ -101,6 +101,7 @@ public class AdminProductManager {
         return "admin/product-form";
     }
 
+    @Transactional
     @PostMapping("/products/save")
     public String saveProduct(
             @ModelAttribute("product") Product product,
@@ -186,12 +187,11 @@ public class AdminProductManager {
                 Color color = colorRepository.findById(colorId).orElse(null);
 
                 if (size != null && color != null) {
-                    ProductVariant variant = null;
-                    if (savedProduct.getVariants() != null && !savedProduct.getVariants().isEmpty()) {
-                        variant = savedProduct.getVariants().iterator().next();
-                    } else {
-                        variant = new ProductVariant();
-                    }
+                    // Tìm biến thể cũ để cập nhật thay vì lấy bừa cái đầu tiên
+                    ProductVariant variant = productVariantRepository
+                            .findByProductAndSizeAndColor(savedProduct, size, color)
+                            .orElse(new ProductVariant());
+
                     variant.setProduct(savedProduct);
                     variant.setSize(size);
                     variant.setColor(color);
@@ -203,6 +203,7 @@ public class AdminProductManager {
                 }
             } catch (Exception e) {
                 System.err.println("LỖI LƯU BIẾN THỂ: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -283,5 +284,20 @@ public class AdminProductManager {
             System.err.println("LỖI SET ẢNH CHÍNH: " + e.getMessage());
         }
         return "redirect:/admin/products/edit/" + productId;
+    }
+
+    @Transactional
+    @GetMapping("/products/variant/delete/{variantId}/{productId}")
+    public String deleteVariant(@PathVariable("variantId") Integer variantId,
+            @PathVariable("productId") Integer productId) {
+        try {
+            // Xóa các thứ liên quan trước khi xóa biến thể (tránh lỗi Foreign Key)
+            productVariantRepository.deleteRelatedCartItems(variantId);
+            productVariantRepository.deleteRelatedOrderItems(variantId);
+            productVariantRepository.deleteById(variantId);
+        } catch (Exception e) {
+            System.err.println("LỖI XÓA BIẾN THỂ: " + e.getMessage());
+        }
+        return "redirect:/admin/products/detail/" + productId;
     }
 }

@@ -650,17 +650,34 @@
                             </td>
 
                             <td style="text-align: right;">
-                                <button class="action-btn btn-view" title="Xem chi tiết"><i
-                                        class="bi bi-eye"></i></button>
+                                <a th:href="@{/admin/customers/detail(id=${cust.id})}" class="action-btn btn-view"
+                                    title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
                                 <button class="action-btn btn-edit-rank" title="Chỉnh sửa Rank"
                                     th:onclick="openRankModal([[${cust.id}]], [[${cust.fullName}]], [[${cust.rankId}]])">
                                     <i class="bi bi-star-fill"></i>
                                 </button>
-                                <button th:if="${cust.status == 1 && cust.role != 'ADMIN'}" class="action-btn btn-lock"
-                                    title="Khóa tài khoản"><i class="bi bi-lock"></i></button>
-                                <button th:if="${cust.status == 0 && cust.role != 'ADMIN'}"
-                                    class="action-btn btn-unlock" title="Mở khóa"><i
-                                        class="bi bi-unlock-fill"></i></button>
+                                <form th:if="${cust.status == 1 && cust.role != 'ADMIN'}"
+                                    th:action="@{/admin/customers/toggle-status}" method="post"
+                                    style="display: inline;">
+                                    <input type="hidden" name="id" th:value="${cust.id}">
+                                    <input type="hidden" name="status" value="0">
+                                    <button type="submit" class="action-btn btn-lock" title="Khóa tài khoản"
+                                        onclick="return confirm('Bạn có chắc muốn khóa tài khoản này?')">
+                                        <i class="bi bi-lock"></i>
+                                    </button>
+                                </form>
+                                <form th:if="${cust.status == 0 && cust.role != 'ADMIN'}"
+                                    th:action="@{/admin/customers/toggle-status}" method="post"
+                                    style="display: inline;">
+                                    <input type="hidden" name="id" th:value="${cust.id}">
+                                    <input type="hidden" name="status" value="1">
+                                    <button type="submit" class="action-btn btn-unlock" title="Mở khóa"
+                                        onclick="return confirm('Bạn có chắc muốn mở khóa tài khoản này?')">
+                                        <i class="bi bi-unlock-fill"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
 

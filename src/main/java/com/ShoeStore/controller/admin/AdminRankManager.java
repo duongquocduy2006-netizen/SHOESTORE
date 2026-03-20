@@ -9,6 +9,7 @@ import com.ShoeStore.model.MembershipRank;
 import com.ShoeStore.repository.MembershipRankRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/ranks")
@@ -37,8 +38,13 @@ public class AdminRankManager {
 
     @GetMapping
     public String index(Model model) {
-        List<MembershipRank> ranks = rankRepo.findAll();
-        model.addAttribute("list", ranks);
+        String sql = "SELECT r.*, " +
+                "(SELECT STRING_AGG(v.code, ', ') FROM vouchers v " +
+                " JOIN voucher_membership_ranks vr ON v.id = vr.voucher_id " +
+                " WHERE vr.rank_id = r.id) as voucher_codes " +
+                "FROM membership_ranks r";
+        List<Map<String, Object>> ranksWithVouchers = jdbc.queryForList(sql);
+        model.addAttribute("list", ranksWithVouchers);
         return "admin/ranks";
     }
 

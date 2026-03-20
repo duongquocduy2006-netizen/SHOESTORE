@@ -15,9 +15,16 @@ public class AdminOrderManager {
     private OrderService orderService;
 
     @GetMapping("/admin/orders")
-    public String dashBoard(Model model) {
-        // Ném toàn bộ danh sách đơn hàng sang View (Thymeleaf)
-        model.addAttribute("orders", orderService.getAllOrders());
+    public String dashBoard(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) Integer status,
+            Model model) {
+
+        // Ném danh sách đơn hàng sang View (Thymeleaf) có filter
+        model.addAttribute("orders", orderService.getAllOrders(keyword, status));
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("statusFilter", status);
+
         return "admin/orders";
     }
 

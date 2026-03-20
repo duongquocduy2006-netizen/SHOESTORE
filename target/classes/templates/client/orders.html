@@ -202,8 +202,8 @@
 
         .luxury-order-card:hover {
             background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
             border-color: rgba(255, 59, 59, 0.3);
         }
 
@@ -337,7 +337,7 @@
     <div class="ambient-blob blob-1"></div>
     <div class="ambient-blob blob-2"></div>
 
-    <div class="container py-5">
+    <div class="container pt-3 pb-5">
         <div class="row g-5">
 
             <div class="col-lg-4 animate__animated animate__fadeInLeft">
@@ -377,8 +377,8 @@
                 </div>
             </div>
 
-            <div class="col-lg-8 animate__animated animate__fadeInUp animate__delay-1s">
-                <div class="glass-panel p-5 js-tilt"
+            <div class="col-lg-8 animate__animated animate__fadeIn">
+                <div class="glass-panel p-4 p-lg-5 js-tilt"
                     style="transform-style: preserve-3d; transform: perspective(1000px);">
                     <div class="content-header d-flex justify-content-between align-items-end">
                         <div>
@@ -507,8 +507,8 @@
                 let y = e.clientY - rect.top;
                 let centerX = rect.width / 2;
                 let centerY = rect.height / 2;
-                let rotateX = ((y - centerY) / centerY) * -3;
-                let rotateY = ((x - centerX) / centerX) * 3;
+                let rotateX = ((y - centerY) / centerY) * -0.5;
+                let rotateY = ((x - centerX) / centerX) * 0.5;
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             });
             card.addEventListener('mouseleave', function () {

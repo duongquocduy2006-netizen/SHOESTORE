@@ -274,30 +274,38 @@
                             <th style="width: 100px;">ID</th>
                             <th>Tên hạng</th>
                             <th>Điểm tối thiểu</th>
+                            <th>Ưu đãi Voucher</th>
                             <th style="text-align: right;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="r : ${list}">
-                            <td class="item-id" th:text="${'#RNK-' + r.id}">#RNK-01</td>
+                            <td class="item-id" th:text="${'#RNK-' + r['id']}">#RNK-01</td>
                             <td>
                                 <span class="tier-badge"
-                                    th:style="'color: ' + ${r.colorCode} + '; border-color: ' + ${r.colorCode} + '; background: ' + ${r.colorCode} + '1a; padding: 4px 10px; border: 2px solid; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase;'">
+                                    th:style="'color: ' + ${r['color_code']} + '; border-color: ' + ${r['color_code']} + '; background: ' + ${r['color_code']} + '1a; padding: 4px 10px; border: 2px solid; border-radius: 4px; font-weight: 700; font-size: 11px; text-transform: uppercase;'">
                                     <i class="bi bi-star-fill"></i>
-                                    <span th:text="${r.rankName}">Tên Hạng</span>
+                                    <span th:text="${r['rank_name']}">Tên Hạng</span>
                                 </span>
                             </td>
                             <td>
                                 <span class="points-badge"
-                                    th:text="${#numbers.formatDecimal(r.minPoints, 0, 'COMMA', 0, 'POINT') + ' điểm'}">0
+                                    th:text="${#numbers.formatDecimal(r['min_points'], 0, 'COMMA', 0, 'POINT') + ' điểm'}">0
                                     điểm</span>
                             </td>
+                            <td>
+                                <div th:if="${r['voucher_codes']}" style="font-size: 11px; color: var(--accent-cyan);">
+                                    <i class="bi bi-ticket-perforated"></i> [[${r['voucher_codes']}]]
+                                </div>
+                                <div th:unless="${r['voucher_codes']}" style="font-size: 11px; color: #555;">Chưa có ưu
+                                    đãi</div>
+                            </td>
                             <td style="text-align: right;">
-                                <a th:href="@{/admin/ranks/edit/{id}(id=${r.id})}" class="action-btn btn-edit"
+                                <a th:href="@{/admin/ranks/edit/{id}(id=${r['id']})}" class="action-btn btn-edit"
                                     title="Sửa">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <a th:href="@{/admin/ranks/delete/{id}(id=${r.id})}"
+                                <a th:href="@{/admin/ranks/delete/{id}(id=${r['id']})}"
                                     onclick="return confirm('Bạn có chắc chắn muốn xóa hạng này?')"
                                     class="action-btn btn-delete" title="Xóa">
                                     <i class="bi bi-trash"></i>

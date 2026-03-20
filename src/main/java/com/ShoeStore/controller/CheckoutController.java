@@ -8,9 +8,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.ShoeStore.model.Voucher;
 import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class CheckoutController {
@@ -18,18 +23,64 @@ public class CheckoutController {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private com.ShoeStore.service.VoucherService voucherService;
+
+    @PostMapping("/checkout/apply-voucher")
+    public String applyVoucher(@RequestParam("voucherCode") String code, HttpSession session, RedirectAttributes ra) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> account = (Map<String, Object>) session.getAttribute("account");
+        if (code == null || code.trim().isEmpty()) {
+            session.removeAttribute("appliedVoucher");
+            ra.addFlashAttribute("voucherError", "Vui lòng nhập mã giảm giá!");
+            return "redirect:/checkout" + (session.getAttribute("quickCheckout") != null ? "?mode=quick" : "");
+        }
+
+        // Get actual rank from DB to be sure
+        Integer rankId = jdbc.queryForObject("SELECT membership_rank_id FROM accounts WHERE id = ?", Integer.class,
+                account.get("id"));
+
+        // Need to calculate current total to validate minOrderValue
+        Double total = calculateCartTotal(session, ((Number) account.get("id")).longValue());
+
+        Optional<Voucher> voucherOpt = voucherService.validateVoucher(code, rankId, total,
+                ((Number) account.get("id")).longValue());
+        if (voucherOpt.isPresent()) {
+            session.setAttribute("appliedVoucher", voucherOpt.get());
+            ra.addFlashAttribute("voucherSuccess", "Áp dụng mã giảm giá thành công!");
+        } else {
+            session.removeAttribute("appliedVoucher");
+            ra.addFlashAttribute("voucherError", "Mã giảm giá không hợp lệ, hết hạn hoặc không đủ điều kiện!");
+        }
+        return "redirect:/checkout" + (session.getAttribute("quickCheckout") != null ? "?mode=quick" : "");
+    }
+
+    private Double calculateCartTotal(HttpSession session, Long accountId) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> quickInfo = (Map<String, Object>) session.getAttribute("quickCheckout");
+        if (quickInfo != null) {
+            Map<String, Object> item = jdbc.queryForMap("SELECT price FROM product_variants WHERE id = ?",
+                    quickInfo.get("variantId"));
+            return ((Number) item.get("price")).doubleValue() * ((Number) quickInfo.get("quantity")).intValue();
+        } else {
+            List<Map<String, Object>> items = jdbc.queryForList(
+                    "SELECT ci.quantity, v.price FROM cart_items ci JOIN product_variants v ON ci.product_variant_id = v.id WHERE ci.user_id = ?",
+                    accountId);
+            return items.stream()
+                    .mapToDouble(i -> ((Number) i.get("price")).doubleValue() * ((Number) i.get("quantity")).intValue())
+                    .sum();
+        }
+    }
+
     @GetMapping("/checkout/quick")
     public String quickCheckout(
             @RequestParam("variantId") Long variantId,
             @RequestParam("quantity") Integer quantity,
             HttpSession session) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> account = (Map<String, Object>) session.getAttribute("account");
-        if (account == null)
-            return "redirect:/login";
-
-        // Store quick checkout info in session
-        session.setAttribute("quickCheckout", Map.of("variantId", variantId, "quantity", quantity));
+        Map<String, Object> quickInfo = new HashMap<>();
+        quickInfo.put("variantId", variantId);
+        quickInfo.put("quantity", quantity);
+        session.setAttribute("quickCheckout", quickInfo);
         return "redirect:/checkout?mode=quick";
     }
 
@@ -54,10 +105,25 @@ public class CheckoutController {
             populateQuickCheckoutModel(model, (Long) quickInfo.get("variantId"), (Integer) quickInfo.get("quantity"));
         } else {
             populateCheckoutModel(model, accountId);
-            session.removeAttribute("quickCheckout"); // Clear quick checkout if user goes back to normal checkout
+            session.removeAttribute("quickCheckout");
+        }
+
+        // --- Voucher Logic for Display ---
+        Double totalPrice = (Double) model.asMap().get("totalPrice");
+        Double shippingFee = totalPrice >= 500000 ? 0.0 : 30000.0;
+        Double discount = 0.0;
+
+        Voucher voucher = (Voucher) session.getAttribute("appliedVoucher");
+        if (voucher != null) {
+            discount = voucherService.calculateDiscount(voucher, totalPrice);
+            model.addAttribute("appliedVoucherCode", voucher.getCode());
+            model.addAttribute("appliedVoucher", voucher);
         }
 
         model.addAttribute("account", account);
+        model.addAttribute("shippingFee", shippingFee);
+        model.addAttribute("discount", discount);
+        model.addAttribute("finalTotal", totalPrice + shippingFee - discount);
 
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> cartItems = (List<Map<String, Object>>) model.asMap().get("cartItems");
@@ -81,7 +147,7 @@ public class CheckoutController {
 
         Map<String, Object> item = jdbc.queryForMap(sql, variantId);
         item.put("quantity", quantity);
-        item.put("id", -1); // Dummy ID for template logic if needed
+        item.put("id", -1);
 
         List<Map<String, Object>> cartItems = List.of(item);
         double total = ((Number) item.get("price")).doubleValue() * quantity;
@@ -134,14 +200,12 @@ public class CheckoutController {
         List<Map<String, Object>> items;
 
         if (quickInfo != null) {
-            // Quick Checkout Mode
-            String quickSql = "SELECT v.id as variant_id, v.price, v.quantity as stock FROM product_variants v WHERE v.id = ?";
+            String quickSql = "SELECT v.id as variant_id, v.price FROM product_variants v WHERE v.id = ?";
             Map<String, Object> item = jdbc.queryForMap(quickSql, quickInfo.get("variantId"));
             item.put("quantity", quickInfo.get("quantity"));
             items = List.of(item);
         } else {
-            // normal cart checkout
-            String cartSql = "SELECT ci.product_variant_id as variant_id, ci.quantity, v.price, v.quantity as stock " +
+            String cartSql = "SELECT ci.product_variant_id as variant_id, ci.quantity, v.price " +
                     "FROM cart_items ci JOIN product_variants v ON ci.product_variant_id = v.id " +
                     "WHERE ci.user_id = ?";
             items = jdbc.queryForList(cartSql, accountId);
@@ -156,53 +220,58 @@ public class CheckoutController {
                 .sum();
 
         double shipping = total >= 500000 ? 0 : 30000;
-        double finalTotal = total + shipping;
+
+        // --- Apply Voucher Discount ---
+        double discount = 0;
+        Voucher voucher = (Voucher) session.getAttribute("appliedVoucher");
+        if (voucher != null) {
+            discount = voucherService.calculateDiscount(voucher, total);
+        }
+
+        double finalTotal = total + shipping - discount;
 
         try {
-            // 1. Map Payment Method Name to ID
             Integer pmId;
             try {
                 pmId = jdbc.queryForObject(
                         "SELECT TOP 1 id FROM payment_methods WHERE method_name LIKE ? OR ? LIKE '%' + method_name + '%'",
                         Integer.class, "%" + paymentMethod + "%", paymentMethod);
             } catch (Exception e) {
-                pmId = 1; // Mặc định là COD
+                pmId = 1;
             }
 
-            // 2. Insert into addresses to get receiver_address_id
-            // Tách address thành các thành phần (tạm thời để ward/district/province trống
-            // hoặc regex nếu cần)
             String addressSql = "INSERT INTO addresses (receiving_name, phone_number, street_detail, is_default, user_id) VALUES (?, ?, ?, 0, ?)";
             jdbc.update(addressSql, fullName, phone, address, accountId);
 
             Long addressId = jdbc.queryForObject("SELECT TOP 1 id FROM addresses WHERE user_id = ? ORDER BY id DESC",
                     Long.class, accountId);
 
-            // Generate Order Code
             String orderCode = "ORD-" + System.currentTimeMillis() / 1000;
 
-            // 3. Tạo Order (Sửa lại đúng cột DB)
             String orderSql = "INSERT INTO orders (order_code, user_id, total_amount, shipping_fee, final_amount, receiver_address_id, payment_method_id, status, created_at) "
-                    +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, 1, GETDATE())";
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, 1, GETDATE())";
 
             jdbc.update(orderSql, orderCode, accountId, total, shipping, finalTotal, addressId, pmId);
 
             Long orderId = jdbc.queryForObject("SELECT TOP 1 id FROM orders WHERE user_id = ? ORDER BY id DESC",
                     Long.class, accountId);
 
-            // 4. Lưu Order Items & Trừ tồn kho
             for (Map<String, Object> item : items) {
                 Integer variantId = ((Number) item.get("variant_id")).intValue();
                 Integer buyQty = ((Number) item.get("quantity")).intValue();
                 Double price = ((Number) item.get("price")).doubleValue();
-                Integer currentStock = ((Number) item.get("stock")).intValue();
 
                 jdbc.update(
                         "INSERT INTO order_items (order_id, product_variant_id, quantity, price) VALUES (?, ?, ?, ?)",
                         orderId, variantId, buyQty, price);
+            }
 
-                jdbc.update("UPDATE product_variants SET quantity = ? WHERE id = ?", currentStock - buyQty, variantId);
+            // --- Post-Order Actions ---
+            if (voucher != null) {
+                jdbc.update("UPDATE vouchers SET quantity = quantity - 1 WHERE id = ?", voucher.getId());
+                jdbc.update("INSERT INTO voucher_usages (voucher_id, user_id, used_at) VALUES (?, ?, GETDATE())",
+                        voucher.getId(), accountId);
+                session.removeAttribute("appliedVoucher");
             }
 
             if (quickInfo != null) {
@@ -211,16 +280,11 @@ public class CheckoutController {
                 jdbc.update("DELETE FROM cart_items WHERE user_id = ?", accountId);
             }
 
-            // ĐIỂM SẼ ĐƯỢC CỘNG KHI ADMIN XÁC NHẬN THÀNH CÔNG (Ở OrderService)
-
             return "redirect:/checkout/success";
 
         } catch (Exception e) {
             e.printStackTrace();
-            populateCheckoutModel(model, accountId);
-            model.addAttribute("account", account);
-            model.addAttribute("error", "Lỗi đặt hàng: " + e.getMessage());
-            return "client/checkout";
+            return "redirect:/checkout?error=order_failed";
         }
     }
 

@@ -533,9 +533,30 @@
                     Mô tả sản phẩm...
                 </p>
 
+                <!-- VOUCHER SECTION -->
+                <div th:if="${vouchers != null && !vouchers.isEmpty()}" class="mb-4">
+                    <div
+                        style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--accent-red); text-transform: uppercase; letter-spacing: 1px;">
+                        <i class="fa fa-ticket-alt"></i> Mã Giảm Giá Khả Dụng
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <div th:each="v : ${vouchers}"
+                            style="background: rgba(229, 9, 20, 0.05); border: 1px dashed var(--accent-red); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s;"
+                            th:title="${'Đơn tối thiểu: ' + #numbers.formatDecimal(v.min_order_value, 0, 'POINT', 0, 'POINT') + 'đ'}">
+                            <div style="font-size: 11px; color: #aaa; font-weight: 500;">GIẢM [[${v.discount_type ==
+                                'PERCENT' ? v.discount_value + '%' : #numbers.formatInteger(v.discount_value/1000, 0) +
+                                'K'}]]</div>
+                            <div style="font-family: 'Oswald'; color: #fff; font-size: 16px; letter-spacing: 1px;">
+                                [[${v.code}]]</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-4">
                     <div class="size-label">
                         <span>Chọn Biến Thể (Size - Màu)</span>
+                        <span id="stockLabel"
+                            style="color: var(--accent-cyan); font-size: 13px; font-weight: 500;"></span>
                     </div>
                     <div class="size-grid">
                         <div th:each="v : ${variants}" class="size-option"
@@ -699,11 +720,12 @@
 
         // JS: Update Variant (Price & Stock)
         let selectedVariantId = null;
+        let currentStock = 0;
 
         function updateVariant(el) {
             selectedVariantId = el.getAttribute('data-id');
             const price = el.getAttribute('data-price');
-            const stock = el.getAttribute('data-quantity');
+            currentStock = parseInt(el.getAttribute('data-quantity'));
 
             // Update UI selection
             document.querySelectorAll('.size-option').forEach(item => item.classList.remove('active'));
@@ -712,11 +734,33 @@
             // Update Price
             const formattedPrice = new Intl.NumberFormat('vi-VN').format(price) + '₫';
             document.getElementById('displayPrice').innerText = formattedPrice;
+
+            // Update Stock Label
+            const stockLabel = document.getElementById('stockLabel');
+            if (currentStock > 0) {
+                stockLabel.innerText = "Kho: " + currentStock;
+                stockLabel.style.color = "var(--accent-cyan)";
+            } else {
+                stockLabel.innerText = "Hết hàng";
+                stockLabel.style.color = "var(--accent-red)";
+            }
+
+            // Reset quantity if exceeds stock
+            const qtyInput = document.getElementById('qtyInput');
+            if (parseInt(qtyInput.value) > currentStock && currentStock > 0) {
+                qtyInput.value = currentStock;
+            } else if (currentStock === 0) {
+                qtyInput.value = 1;
+            }
         }
 
         function addToCart() {
             if (!selectedVariantId) {
                 alert("Vui lòng chọn Size & Màu sắc!");
+                return;
+            }
+            if (currentStock <= 0) {
+                alert("Sản phẩm này hiện đang hết hàng!");
                 return;
             }
             const qty = document.getElementById('qtyInput').value;
@@ -737,6 +781,10 @@
                 alert("Vui lòng chọn Size & Màu sắc!");
                 return;
             }
+            if (currentStock <= 0) {
+                alert("Sản phẩm này hiện đang hết hàng!");
+                return;
+            }
             const qty = document.getElementById('qtyInput').value;
             window.location.href = `/checkout/quick?variantId=${selectedVariantId}&quantity=${qty}`;
         }
@@ -744,7 +792,15 @@
         // JS: Quantity
         const qtyInput = document.getElementById('qtyInput');
         function increase() {
-            qtyInput.value = parseInt(qtyInput.value) + 1;
+            if (!selectedVariantId) {
+                alert("Vui lòng chọn Size & Màu sắc trước!");
+                return;
+            }
+            if (parseInt(qtyInput.value) < currentStock) {
+                qtyInput.value = parseInt(qtyInput.value) + 1;
+            } else {
+                alert("Chỉ còn " + currentStock + " sản phẩm trong kho!");
+            }
         }
         function decrease() {
             if (parseInt(qtyInput.value) > 1) {

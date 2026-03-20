@@ -28,7 +28,7 @@ public class CartController {
 		Long accountId = ((Number) account.get("id")).longValue();
 
 		String sql = "SELECT ci.id, ci.quantity, ci.product_variant_id as variant_id, p.id as product_id, " +
-				"p.product_name, s.size_name, col.color_name, v.price, " +
+				"p.product_name, s.size_name, col.color_name, v.price, v.quantity as stock, " +
 				"(SELECT TOP 1 '/images/' + image_url FROM product_images WHERE product_id = p.id ORDER BY is_primary DESC, id ASC) as image_url "
 				+
 				"FROM cart_items ci " +
@@ -68,13 +68,28 @@ public class CartController {
 
 		Long accountId = ((Number) account.get("id")).longValue();
 
-		// Kiểm tra xem sản phẩm đã có trong giỏ chưa
+		// 1. Kiểm tra tồn kho
+		String stockSql = "SELECT quantity FROM product_variants WHERE id = ?";
+		int availableStock = jdbc.queryForObject(stockSql, Integer.class, variantId);
+
+		// 2. Kiểm tra xem sản phẩm đã có trong giỏ chưa
 		String checkSql = "SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_variant_id = ?";
 		List<Map<String, Object>> existing = jdbc.queryForList(checkSql, accountId, variantId);
 
+		int currentInCart = 0;
+		if (!existing.isEmpty()) {
+			currentInCart = ((Number) existing.get(0).get("quantity")).intValue();
+		}
+
+		if (currentInCart + quantity > availableStock) {
+			response.put("success", false);
+			response.put("message", "Xin lỗi, kho chỉ còn " + availableStock + " sản phẩm.");
+			return response;
+		}
+
 		if (!existing.isEmpty()) {
 			// Update quantity
-			int newQty = ((Number) existing.get(0).get("quantity")).intValue() + quantity;
+			int newQty = currentInCart + quantity;
 			jdbc.update("UPDATE cart_items SET quantity = ? WHERE id = ?", newQty, existing.get(0).get("id"));
 		} else {
 			// Insert new
@@ -104,6 +119,18 @@ public class CartController {
 		if (quantity <= 0) {
 			jdbc.update("DELETE FROM cart_items WHERE id = ?", itemId);
 		} else {
+			// Kiểm tra tồn kho trước khi update
+			String stockSql = "SELECT v.quantity FROM product_variants v " +
+					"JOIN cart_items ci ON v.id = ci.product_variant_id " +
+					"WHERE ci.id = ?";
+			int availableStock = jdbc.queryForObject(stockSql, Integer.class, itemId);
+
+			if (quantity > availableStock) {
+				response.put("success", false);
+				response.put("message", "Chỉ còn " + availableStock + " sản phẩm trong kho");
+				return response;
+			}
+
 			jdbc.update("UPDATE cart_items SET quantity = ? WHERE id = ?", quantity, itemId);
 		}
 

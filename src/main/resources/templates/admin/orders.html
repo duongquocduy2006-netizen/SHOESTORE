@@ -449,22 +449,27 @@
                     aria-label="Close"></button>
             </div>
 
-            <div class="toolbar">
+            <form th:action="@{/admin/orders}" method="get" class="toolbar">
                 <div class="search-box">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="search-input" placeholder="Tìm kiếm Mã đơn, Tên khách hàng...">
+                    <input type="text" name="keyword" th:value="${keyword}" class="search-input"
+                        placeholder="Tìm kiếm Mã đơn, Tên khách hàng...">
                 </div>
 
-                <select class="filter-select">
-                    <option>Trạng thái: Tất cả</option>
-                    <option>Chờ xác nhận</option>
-                    <option>Đang giao hàng</option>
-                    <option>Đã giao thành công</option>
-                    <option>Đã hủy</option>
+                <select name="status" class="filter-select" onchange="this.form.submit()">
+                    <option value="" th:selected="${statusFilter == null}">Trạng thái: Tất cả</option>
+                    <option value="1" th:selected="${statusFilter == 1}">Chờ xác nhận</option>
+                    <option value="2" th:selected="${statusFilter == 2}">Đang giao hàng</option>
+                    <option value="5" th:selected="${statusFilter == 5}">Đã nhận hàng (Chờ duyệt)</option>
+                    <option value="3" th:selected="${statusFilter == 3}">Đã giao thành công</option>
+                    <option value="4" th:selected="${statusFilter == 4}">Đã hủy</option>
                 </select>
 
-                <input type="date" class="date-input" style="color: #ccc;">
-            </div>
+                <!-- Ẩn date input đi trước nếu không cần backend logic xử lý -->
+                <!-- <input type="date" class="date-input" style="color: #ccc;"> -->
+
+                <button type="submit" style="display: none;"></button>
+            </form>
 
             <div class="table-card">
                 <table>
